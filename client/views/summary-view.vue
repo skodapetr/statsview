@@ -1,0 +1,72 @@
+<template>
+  <div>
+    <table class="summary-table">
+      <tr>
+        <th>Name</th>
+        <th>Value</th>
+      </tr>
+      <tr
+        v-for="(value, name) in data.summary"
+        :key="name"
+      >
+        <td>
+          {{ name }}
+        </td>
+        <td class="value-cell">
+          {{ formatNumber(value) }}
+        </td>
+      </tr>
+    </table>
+  </div>
+</template>
+
+<script>
+  export default {
+    "label": "Summary",
+    "name": "summary-view",
+    "props": {
+      "data": {"type": Object, "required": true}
+    },
+    "computed": {
+      "total": function () {
+        return this.data.summary["sequences"];
+      },
+      "filteredSequences": function () {
+        return this.data.summary["filtered sequences"];
+      },
+      "nonPrimaryAlignments": function () {
+        return this.data.summary["non-primary alignments"];
+      },
+      "readsDuplicated": function () {
+        return this.data.summary["reads duplicated"];
+      },
+      "readsMapped": function () {
+        return this.data.summary["reads mapped"];
+      },
+      "readsMQ0": function () {
+        return this.data.summary["reads MQ0"];
+      },
+      "averageLength": function () {
+        return this.data.summary["average length"];
+      }
+    },
+    "methods": {
+      "formatNumber": function (number) {
+        if (Number.isInteger) {
+          return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        } else {
+          return number;
+        }
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  .summary-table {
+    margin-left: 2rem;
+  }
+  .value-cell {
+    text-align: right;
+  }
+</style>
