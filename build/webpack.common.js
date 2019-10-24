@@ -14,10 +14,16 @@ module.exports = {
   "optimization": {
     "splitChunks": {
       "cacheGroups": {
-        "commons": {
+        "vendor": {
           "test": /[\\/]node_modules[\\/]/,
           "filename": "[name].[chunkhash].js",
           "name": "vendor",
+          "chunks": "all"
+        },
+        "data": {
+          "test": /data.js/,
+          "filename": "[name].js",
+          "name": "data",
           "chunks": "all"
         },
       },

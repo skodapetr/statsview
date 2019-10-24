@@ -56,11 +56,15 @@
         </b-col>
       </b-row>
     </b-container>
+    <div class="circle-menu">
+      <half-circle-list/>
+    </div>
   </div>
 </template>
 
 <script>
   import {loadBchkFile} from "./bchk-reader";
+  import CircleList from "./ui/half-circle-list";
   import ViewList from "./view-list";
   import SummaryView from "./views/summary-view";
   import AcgtCyclesView from "./views/acgt-cycles-view";
@@ -122,6 +126,8 @@
       "acgt-cycles-view": AcgtCyclesView,
       "indel-cycle-view": IndelCycleView,
       "insert-size-view": InsertSizeView,
+      "half-circle-list": CircleList,
+
     },
     "data": () => ({
       ...viewsNames,
@@ -161,6 +167,12 @@
 <style scoped>
   .navbar {
     height: 3rem;
+  }
+
+  .circle-menu {
+    position: fixed;
+    top: 0.5rem;
+    left: 50%;
   }
 
   .fixed-window {

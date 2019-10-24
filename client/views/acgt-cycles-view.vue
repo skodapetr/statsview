@@ -1,14 +1,22 @@
 <template>
-  <plot-view
-    :plot="plot"
-    :scales="scales"
-    :resize-notification="resizeNotification"
-    :examples="examples"
-  />
+  <div style="height: 100%">
+    <plot-view
+      v-if="false"
+      :plot="plot"
+      :scales="scales"
+      :resize-notification="resizeNotification"
+    />
+    <d3-area-plot
+      :data="plot"
+      :resize-notification="resizeNotification"
+    />
+  </div>
 </template>
 
 <script>
-  import PlotView from "./plot-view";
+  import PlotView from "../plot/abstract-svg-line-plot";
+  import AreaPlot from "../d3js/area-plot";
+
   import {rangeByStep} from "../vue-svg-canvas/scale-utils";
   import {STATUS_OK, STATUS_WARNING, STATUS_INVALID} from "../data-status";
 
@@ -19,51 +27,12 @@
     "name": "acgt-cycles",
     "components": {
       "plot-view": PlotView,
+      "d3-area-plot": AreaPlot,
     },
     "props": {
       "data": {"type": Object, "required": true},
       "options": {"type": Object, "required": true},
       "resizeNotification": {"type": Object, "require": true},
-    },
-    "data": () => {
-      const scales = {
-        "x": {
-          "min": 0,
-          "max": 75,
-          "step": 10,
-        },
-        "y": {
-          "min": 0,
-          "max": 100,
-          "step": 20,
-        }
-      };
-      return {
-        "examples": [
-          {
-            "status": STATUS_OK,
-            "label": "Good data",
-            "plot": [
-              {
-                "y": [25, 25],
-                "x": [0, 75],
-              }
-            ],
-            "scales": scales
-          },
-          {
-            "status": STATUS_INVALID,
-            "label": "Bad data",
-            "plot": [
-              {
-                "y": [25, 50],
-                "x": [0, 75],
-              }
-            ],
-            "scales": scales
-          }
-        ]
-      }
     },
     "computed": {
       "plot": function () {

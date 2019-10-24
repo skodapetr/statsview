@@ -5,6 +5,8 @@ const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const HtmlWebpackInlineSourcePlugin =
+  require("html-webpack-inline-source-plugin");
 
 module.exports = merge(common, {
   "mode": "production",
@@ -21,6 +23,9 @@ module.exports = merge(common, {
         "sourceMap": false,
         "terserOptions": {
           // https://github.com/webpack-contrib/terser-webpack-plugin#terseroptions
+          "compress": {
+            "ecma" : 6
+          }
         },
       }),
     ],
@@ -44,6 +49,10 @@ module.exports = merge(common, {
       "filename": "index.html",
       "template": path.join(__dirname, "..", "public", "index.html"),
       "inject": true,
+      "inlineSource": ".(js|css)$"
+    }),
+    new HtmlWebpackInlineSourcePlugin({
+      "compress": true
     }),
   ],
 });

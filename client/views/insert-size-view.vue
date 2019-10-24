@@ -8,7 +8,7 @@
 </template>
 
 <script>
-  import PlotView from "./plot-view";
+  import PlotView from "../plot/abstract-svg-line-plot";
   import {rangeByStep} from "../vue-svg-canvas/scale-utils";
   import {STATUS_OK, STATUS_WARNING, STATUS_INVALID} from "../data-status";
 
