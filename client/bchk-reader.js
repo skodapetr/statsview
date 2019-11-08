@@ -1,16 +1,4 @@
-// @flow
-
-export type BchkFile = {
-  "summary": {},
-  "insert-size": {},
-  // "gc-content": {},
-  "acgt-cycles": {},
-  // "quals-percentil": {},
-  // "quals": {},
-  "indel-cycles": {},
-};
-
-export function loadBchkFile(content: string): BchkFile {
+export function loadBchkFile(content) {
   const raw = {};
   const summary = {};
 
@@ -39,6 +27,21 @@ export function loadBchkFile(content: string): BchkFile {
     {"index": 4, "name": "otherPairs"},
   ]);
 
+  // Show as a normalized values (Y) for bins (X).
+  // We use GCF and GCL
+  const gcContent = {
+    ...transposeMatrix(raw["GCF"], [
+      {"index": 0, "name": "gcf-x"},
+      {"index": 1, "name": "gcf-y"},
+    ]),
+    ...transposeMatrix(raw["GCL"], [
+      {"index": 0, "name": "gcl-x"},
+      {"index": 1, "name": "gcl-y"},
+    ])
+  };
+  gcContent["gcf-y"] = normalize(gcContent["gcf-y"]);
+  gcContent["gcl-y"] = normalize(gcContent["gcl-y"]);
+
   const acgtCycles = transposeMatrix(raw["GCC"], [
     {"index": 0, "name": "cycle"},
     {"index": 1, "name": "A"},
@@ -54,18 +57,35 @@ export function loadBchkFile(content: string): BchkFile {
     {"index": 4, "name": "deletionsRev"},
   ]);
 
+  // FFQ {quality bin X } {... values = Y}
+  // show median, min, percentil for Y
+  // LFQ -> kazde jeden obrazek
+  // X = 0 - 75 (cycle)
+  const quality2 = {
+    "FFQ": createQuality2Graph(raw["FFQ"]),
+    "LFQ": createQuality2Graph(raw["LFQ"])
+  };
+
+  // FFQ, LFQ
+  // Data na radku (krome prvniho) jsou udaje pro krivku
+  const quality3Fnc = (values) => values.slice(1).map((value) => Number(value));
+  const quality3 = {
+    "FFQ": raw["FFQ"].map(quality3Fnc),
+    "LFQ": raw["FFQ"].map(quality3Fnc)
+  };
+
   return {
     "summary": summary,
     "insert-size": insertSize,
-    // "gc-content": null, // gc-content.png
+    "gc-content": gcContent,
     "acgt-cycles": acgtCycles,
-    // "quals-percentil": null, // quals2.png
-    // "quals": null, // quals3.gp
+    "quality-2": quality2,
+    "quality-3": quality3,
     "indel-cycles": indelCycles
   };
 }
 
-function enumerateLines(content: string, callback: (string) => void) {
+function enumerateLines(content, callback) {
   let line = "";
   for (let index = 0; index < content.length; ++index) {
     if (content[index] === "\n") {
@@ -78,21 +98,83 @@ function enumerateLines(content: string, callback: (string) => void) {
   callback(line);
 }
 
-function transposeMatrix(
-  values: Array<Array<string>>,
-  namedRows: Array<{ "index": number, "name": string }>) {
+function transposeMatrix(values, namedRows) {
   const result = {};
   result["count"] = values.length;
-  result["max"] = 0;
   namedRows.forEach(({name}) => {
     result[name] = [];
   });
   values.forEach((item) => {
     namedRows.forEach(({name, index}) => {
       result[name].push(Number(item[index]));
-      result.max = Math.max(result.max, Number(item[index]));
     });
   });
   return result;
 }
 
+function normalize(values) {
+  const max = Math.max(...values);
+  return values.map(value => value / max);
+}
+
+function createQuality2Graph(rows) {
+  const binsValues = [];
+  const medianValues = [];
+  const meanValues = [];
+  const percentile25Values = [];
+  const percentile75Values = [];
+  rows.forEach((row) => {
+    binsValues.push(Number(row[0]));
+    const values = row.slice(1).map(value => Number(value));
+    const sum = values.reduce((left, right) => left + right);
+    //
+    medianValues.push(percentileForQuality(values, sum, 0.5));
+    meanValues.push(meanForQuality(values, sum));
+    percentile25Values.push(percentileForQuality(values, sum, 0.25));
+    percentile75Values.push(percentileForQuality(values, sum, 0.75));
+  });
+  return {
+    "bins": binsValues,
+    "median": medianValues,
+    "mean": meanValues,
+    "percentile-25": percentile25Values,
+    "percentile-75": percentile75Values
+  };
+}
+
+function percentileForQuality(values, sum, percentile) {
+  let index = sum * percentile;
+  for (let i = 0; i < values.length; ++i) {
+    if (index > values[i]) {
+      // We just step over these values.
+      index -= values[i];
+      continue;
+    } else if (index <= values[i]) {
+      // The required index is in given array.
+      return i;
+    }
+  }
+  throw RangeError("Can't get percentile.")
+}
+
+function meanForQuality(values, sum) {
+  let average = 0;
+  values.forEach((count, quality) => {
+    average += count * quality;
+  });
+  return average /= sum;
+}
+
+function transposeSubMatrix(values, offsetX) {
+  const width = values[0].length - offsetX;
+  const output = [];
+  for (let index = 0; index < width; ++index) {
+    output.push([]);
+  }
+  values.forEach((row) => {
+    for (let index = 0; index < width; ++index) {
+      output[index].push(Number(row[index + offsetX]));
+    }
+  });
+  return output;
+}

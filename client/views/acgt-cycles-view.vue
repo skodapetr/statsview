@@ -1,41 +1,51 @@
 <template>
   <div style="height: 100%">
-    <plot-view
-      v-if="false"
-      :plot="plot"
-      :scales="scales"
+    <d3-area-plot
+      v-if="menuData.graph === 'area'"
+      :data="plotData"
       :resize-notification="resizeNotification"
     />
-    <d3-area-plot
-      :data="plot"
+    <d3-line-plot
+      v-if="menuData.graph === 'line'"
+      :data="plotData"
+      :args="linePlotArgs"
       :resize-notification="resizeNotification"
     />
   </div>
 </template>
 
 <script>
-  import PlotView from "../plot/abstract-svg-line-plot";
-  import AreaPlot from "../d3js/area-plot";
+  import AreaPlot from "../d3js/multi-area-plot";
+  import LinePlot from "../d3js/line-plot";
 
-  import {rangeByStep} from "../vue-svg-canvas/scale-utils";
+  import {rangeByStep} from "./views-utils";
   import {STATUS_OK, STATUS_WARNING, STATUS_INVALID} from "../data-status";
 
   export default {
     "validator": validateData,
     "label": "ACGT cycles",
+    "menuData": {
+      "graph": "area"
+    },
     //
     "name": "acgt-cycles",
     "components": {
-      "plot-view": PlotView,
       "d3-area-plot": AreaPlot,
+      "d3-line-plot": LinePlot,
     },
+    "data": () => ({
+      "linePlotArgs": {
+
+      }
+    }),
     "props": {
       "data": {"type": Object, "required": true},
+      "menuData": {"type": Object, "required": true},
       "options": {"type": Object, "required": true},
       "resizeNotification": {"type": Object, "require": true},
     },
     "computed": {
-      "plot": function () {
+      "plotData": function () {
         const data = selectData(this.data);
         const options = selectData(this.options);
         return [
@@ -65,23 +75,6 @@
           },
         ];
       },
-      "scales": function () {
-        const data = selectData(this.data);
-        return {
-          "x": {
-            "title": "Read Cycle",
-            "min": 0,
-            "max": Math.max(...data["cycle"]),
-            "step": 10,
-          },
-          "y": {
-            "title": "Base content [%]",
-            "min": 0,
-            "max": 100,
-            "step": 20,
-          },
-        };
-      },
     }
   };
 
@@ -90,7 +83,6 @@
   }
 
   function validateData(data) {
-    data = selectData(data);
     return STATUS_OK;
   }
 

@@ -1,8 +1,6 @@
-// @flow
-
 export function rangeByStep(
-  minValue: number, maxValue: number, stepSize: number) {
-  const values: Array<number> = [];
+  minValue, maxValue, stepSize) {
+  const values = [];
   for (let value = minValue; value < maxValue; value += stepSize) {
     values.push(value);
   }
@@ -11,10 +9,10 @@ export function rangeByStep(
 }
 
 export function rangeByStepFromOrigin(
-  originValue: number, minValue: number, maxValue: number, stepSize: number) {
+  originValue, minValue, maxValue, stepSize) {
   // Update minValues so we can reach originValue using steps.
   minValue = Math.round((minValue - originValue) / stepSize) * stepSize;
-  const values: Array<number> = [];
+  const values = [];
   for (let value = minValue; value < maxValue; value += stepSize) {
     values.push(value);
   }

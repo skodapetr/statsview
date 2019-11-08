@@ -10,9 +10,6 @@ module.exports = (api) => {
           "chrome": 41
         }
       }
-    ],
-    [
-      "@babel/preset-flow"
     ]
   ];
 

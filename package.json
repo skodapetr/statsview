@@ -9,8 +9,7 @@
     "dev": "node ./server/server.develop.js",
     "eslint": "eslint --ext .js,.vue --ignore-path .gitignore . --fix",
     "test": "jest",
-    "build": "cross-env NODE_ENV=production webpack --config build/webpack.production.js",
-    "flow": "flow"
+    "build": "cross-env NODE_ENV=production webpack --config build/webpack.production.js"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -31,7 +30,6 @@
   "dependencies": {
     "@babel/core": "^7.6.2",
     "@babel/preset-env": "^7.6.2",
-    "@babel/preset-flow": "^7.0.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.25",
     "@fortawesome/free-solid-svg-icons": "^5.11.2",
     "@fortawesome/vue-fontawesome": "^0.1.7",
@@ -49,11 +47,9 @@
     "eslint": "^6.4.0",
     "eslint-config-airbnb": "^18.0.1",
     "eslint-loader": "^3.0.1",
-    "eslint-plugin-flowtype": "^4.3.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-vue": "^5.2.3",
     "express": "^4.17.1",
-    "flow-bin": "^0.108.0",
     "html-webpack-inline-source-plugin": "0.0.10",
     "html-webpack-plugin": "^3.2.0",
     "jest": "^24.9.0",

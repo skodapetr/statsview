@@ -51,8 +51,6 @@ module.exports = merge(common, {
       "inject": true,
       "inlineSource": ".(js|css)$"
     }),
-    new HtmlWebpackInlineSourcePlugin({
-      "compress": true
-    }),
+    new HtmlWebpackInlineSourcePlugin(),
   ],
 });

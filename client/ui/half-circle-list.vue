@@ -103,10 +103,6 @@
     font-size: 1.5em;
   }
 
-  /*#on-check:checked + #activator > span {*/
-  /*  opacity: 0;*/
-  /*}*/
-
   /* The styling of the menu items container div */
   #menu-items {
     width: 5px;

@@ -9,6 +9,15 @@
       <b-navbar-brand href="#">
         RMME Viewer
       </b-navbar-brand>
+      <b-collapse
+        id="nav-collapse"
+        is-nav
+      >
+        <acgt-cycles-view-menu
+          v-if="view === ACGT_CYCLES_VIEW"
+          :data="viewData[ACGT_CYCLES_VIEW]"
+        />
+      </b-collapse>
     </b-navbar>
     <b-container
       fluid
@@ -18,7 +27,7 @@
         <b-col
           sm="12"
           md="2"
-          class="fixed-window"
+          class="scroll-window"
         >
           <view-list
             :views="viewsList"
@@ -38,6 +47,13 @@
           <acgt-cycles-view
             v-if="view === ACGT_CYCLES_VIEW"
             :data="data"
+            :menu-data="viewData[ACGT_CYCLES_VIEW]"
+            :options="options"
+            :resize-notification="resizeNotification"
+          />
+          <gc-content-view
+            v-if="view === GC_CONTENT_VIEW"
+            :data="data"
             :options="options"
             :resize-notification="resizeNotification"
           />
@@ -49,6 +65,18 @@
           />
           <insert-size-view
             v-if="view === INSERT_SIZE_VIEW"
+            :data="data"
+            :options="options"
+            :resize-notification="resizeNotification"
+          />
+          <quality-2-view
+            v-if="view === QUALITY_2_VIEW"
+            :data="data"
+            :options="options"
+            :resize-notification="resizeNotification"
+          />
+          <quality-3-view
+            v-if="view === QUALITY_3_VIEW"
             :data="data"
             :options="options"
             :resize-notification="resizeNotification"
@@ -68,17 +96,22 @@
   import ViewList from "./view-list";
   import SummaryView from "./views/summary-view";
   import AcgtCyclesView from "./views/acgt-cycles-view";
-  import IndelCycleView from "./views/indel-cycles-view"
-  import InsertSizeView from "./views/insert-size-view"
+  import AcgtCyclesViewMenu from "./views/acgt-cycles-view-menu";
+  import GcConventView from "./views/gc-content-view";
+  import IndelCycleView from "./views/indel-cycles-view";
+  import InsertSizeView from "./views/insert-size-view";
+  import Quality2View from "./views/quality-2-view";
+  import Quality3View from "./views/quality-3-view";
   import createDefaultOptions from "./default-options";
+
 
   const SUMMARY_VIEW = 1;
   const ACGT_CYCLES_VIEW = 2;
   const GC_CONTENT_VIEW = 3;
   const INDEL_CYCLES_VIEW = 4;
   const INSERT_SIZE_VIEW = 5;
-  const QUALS_PERCENTIL_VIEW = 6;
-  const QUALS_SIZE_VIEW = 7;
+  const QUALITY_2_VIEW = 6;
+  const QUALITY_3_VIEW = 7;
 
   const viewsNames = {
     "SUMMARY_VIEW": SUMMARY_VIEW,
@@ -86,8 +119,8 @@
     "GC_CONTENT_VIEW": GC_CONTENT_VIEW,
     "INDEL_CYCLES_VIEW": INDEL_CYCLES_VIEW,
     "INSERT_SIZE_VIEW": INSERT_SIZE_VIEW,
-    "QUALS_PERCENTIL_VIEW": QUALS_PERCENTIL_VIEW,
-    "QUALS_SIZE_VIEW": QUALS_SIZE_VIEW,
+    "QUALITY_2_VIEW": QUALITY_2_VIEW,
+    "QUALITY_3_VIEW": QUALITY_3_VIEW,
   };
 
   const viewsList = [
@@ -99,7 +132,8 @@
       "label": AcgtCyclesView.label,
       "value": ACGT_CYCLES_VIEW,
     }, {
-      "label": "GC content",
+      "validator": GcConventView.validator,
+      "label": GcConventView.label,
       "value": GC_CONTENT_VIEW,
     }, {
       "validator": IndelCycleView.validator,
@@ -110,11 +144,13 @@
       "label": InsertSizeView.label,
       "value": INSERT_SIZE_VIEW,
     }, {
-      "label": "Quality per cycle",
-      "value": QUALS_PERCENTIL_VIEW,
+      "validator": Quality2View.validator,
+      "label": Quality2View.label,
+      "value": QUALITY_2_VIEW,
     }, {
-      "label": "Quality per cycle",
-      "value": QUALS_SIZE_VIEW,
+      "validator": Quality3View.validator,
+      "label": Quality3View.label,
+      "value": QUALITY_3_VIEW,
     }
   ];
 
@@ -124,19 +160,25 @@
       "view-list": ViewList,
       "summary-view": SummaryView,
       "acgt-cycles-view": AcgtCyclesView,
+      "acgt-cycles-view-menu":AcgtCyclesViewMenu,
       "indel-cycle-view": IndelCycleView,
       "insert-size-view": InsertSizeView,
+      "gc-content-view": GcConventView,
       "half-circle-list": CircleList,
-
+      "quality-2-view": Quality2View,
+      "quality-3-view": Quality3View,
     },
     "data": () => ({
       ...viewsNames,
       "view": ACGT_CYCLES_VIEW,
       "data": loadBchkFile(window.rmme_data),
       "options": createDefaultOptions(),
-      "resizeNotification": {}
+      "resizeNotification": {},
+      "viewData": {
+        [ACGT_CYCLES_VIEW]: AcgtCyclesView.menuData
+      },
     }),
-    "mounted": function() {
+    "mounted": function () {
       window.addEventListener("resize", () => {
         this.resizeNotification = {};
       });
@@ -175,8 +217,13 @@
     left: 50%;
   }
 
-  .fixed-window {
+  .scroll-window {
     overflow-y: scroll;
+    height: calc(100vh - 5em);
+  }
+
+  .fixed-window {
+    overflow-y: hidden;
     height: calc(100vh - 5em);
   }
 </style>

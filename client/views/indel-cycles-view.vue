@@ -1,15 +1,16 @@
 <template>
-  <plot-view
-    :plot="plot"
-    :scales="scales"
-    :resize-notification="resizeNotification"
-    :examples="examples"
-  />
+  <div style="height: 100%">
+    <d3-line-plot
+      :data="plotData"
+      :resize-notification="resizeNotification"
+    />
+  </div>
 </template>
 
 <script>
-  import PlotView from "../plot/abstract-svg-line-plot";
-  import {rangeByStep} from "../vue-svg-canvas/scale-utils";
+  import LinePlot from "../d3js/line-plot";
+
+  import {rangeByStep} from "./views-utils";
   import {STATUS_OK, STATUS_WARNING, STATUS_INVALID} from "../data-status";
 
   export default {
@@ -18,7 +19,7 @@
     //
     "name": "indel-cycle",
     "components": {
-      "plot-view": PlotView,
+      "d3-line-plot": LinePlot,
     },
     "data": () => ({
       "examples": []
@@ -29,7 +30,7 @@
       "resizeNotification": {"type": Object, "require": true},
     },
     "computed": {
-      "plot": function () {
+      "plotData": function () {
         const data = selectData(this.data);
         const options = selectData(this.options);
         const x = rangeByStep(0, data.count, 1);
@@ -59,23 +60,6 @@
             "x": x,
           },
         ];
-      },
-      "scales": function () {
-        const data = selectData(this.data);
-        return {
-          "x": {
-            "title": "Read cycle",
-            "min": 0,
-            "max": data.count,
-            "step": 10,
-          },
-          "y": {
-            "title": "Indel count",
-            "min": 0,
-            "max": data.max,
-            "step": 500,
-          },
-        };
       }
     }
   };
@@ -85,7 +69,6 @@
   }
 
   function validateData(data) {
-    data = selectData(data);
     return STATUS_OK;
   }
 

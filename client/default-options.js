@@ -17,6 +17,28 @@ export default function createDefaultOptions() {
       "inwardOrientedPairs": "green",
       "outwardOrientedPairs": "blue",
       "otherPairs": "violet",
+    },
+    "gc-content": {
+      "gcf": "green",
+      "gcl": "red",
+    },
+    "quality-2": {
+      "FFQ" : {
+        "median": "black",
+        "mean": "red",
+        "percentile": "gray"
+      },
+      "LFQ" : {
+        "median": "black",
+        "mean": "green",
+        "percentile": "gray"
+      }
+    },
+    "quality-3": {
+      "FFQ" : {
+      },
+      "LFQ" : {
+      }
     }
   };
 }
