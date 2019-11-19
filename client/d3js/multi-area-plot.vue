@@ -23,10 +23,15 @@
     "props": {
       "data": {"type": Array, "required": true},
       "resizeNotification": {"type": Object, "required": true},
+      "args": {"type": Object, "default": () => ({})},
     },
     "mounted": function () {
-      const xRange = range(this.data, (item) => item["x"]);
-      const yRange = range(this.data, (item) => item["y"], {"min": 0});
+      const args = {
+        ...this.args
+      };
+
+      const xRange = range(this.data, (item) => item["x"], args.xRange);
+      const yRange = range(this.data, (item) => item["y"], args.yRange);
       const margin = computeMargin(yRange);
       const layout = computeLayout(margin, this.getScreenSize(), {
         "yLevels": 4

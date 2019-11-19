@@ -4,11 +4,12 @@
       v-if="menuData.graph === 'area'"
       :data="plotData"
       :resize-notification="resizeNotification"
+      :args="args"
     />
     <d3-line-plot
       v-if="menuData.graph === 'line'"
       :data="plotData"
-      :args="linePlotArgs"
+      :args="args"
       :resize-notification="resizeNotification"
     />
   </div>
@@ -34,8 +35,11 @@
       "d3-line-plot": LinePlot,
     },
     "data": () => ({
-      "linePlotArgs": {
-
+      "args": {
+        "yRange": {
+          "max": 100,
+          "min": 0,
+        }
       }
     }),
     "props": {

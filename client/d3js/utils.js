@@ -8,6 +8,7 @@ export function range(data, selector, args) {
   args = {
     "min": Number.MAX_VALUE,
     "max": Number.MIN_VALUE,
+    // TODO: Rename to marginUpper, marginLower
     "lower": 0,
     "higher": 0,
     ...args

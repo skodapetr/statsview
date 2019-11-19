@@ -12,6 +12,7 @@
           :line="ffqLineData"
           :area="ffqAreaData"
           :resize-notification="resizeNotification"
+          :args="args"
         />
       </b-col>
       <b-col
@@ -22,6 +23,7 @@
           :line="lfqLineData"
           :area="lfqAreaData"
           :resize-notification="resizeNotification"
+          :args="args"
         />
       </b-col>
     </b-row>
@@ -43,7 +45,12 @@
       "d3-line-area-plot": LineAreaPlot,
     },
     "data": () => ({
-      "examples": []
+      "args": {
+        "yRange": {
+          "max": 50,
+          "min": 0,
+        }
+      }
     }),
     "props": {
       "data": {"type": Object, "required": true},

@@ -24,16 +24,21 @@
       "line": {"type": Array, "required": true},
       "area": {"type": Array, "required": true},
       "resizeNotification": {"type": Object, "required": true},
+      "args": {"type": Object, "default": () => ({})},
     },
     "mounted": function () {
+      const args = {
+        ...this.args
+      };
+
       const allData = [...this.line, ...this.area];
-      const xRange = range(allData, (item) => item["x"]);
+      const xRange = range(allData, (item) => item["x"],  args.xRange);
       const yRange = range(allData, (item) => {
         if (item["y"] !== undefined) {
           return item["y"];
         }
         return [...item["y-low"], ...item["y-high"]]
-      });
+      },  args.yRange);
       const margin = computeMargin(yRange);
       const layout = computeLayout(margin, this.getScreenSize());
 
@@ -52,13 +57,13 @@
         .append("path")
         .attr("fill", (data) => data["color"])
         .attr("stroke", "none")
-        .attr("d", function(data) {
+        .attr("d", function (data) {
             return d3Area()
               .x(function (_, index) {
                 return x(data.x[index]);
               })
-              .y0((_, index) =>  y(data["y-low"][index]))
-              .y1((_, index) =>  y(data["y-high"][index]))
+              .y0((_, index) => y(data["y-low"][index]))
+              .y1((_, index) => y(data["y-high"][index]))
               (data.x);
           }
         );
