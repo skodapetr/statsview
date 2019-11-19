@@ -4,8 +4,9 @@
       v-for="(item, index) in views"
       :key="index"
       :variant="selectVariant(item)"
+      :active="index === value"
       button
-      @click="onSelect(item)"
+      @click="onSelect(index)"
     >
       {{ item.label }}
     </b-list-group-item>
@@ -19,10 +20,11 @@
     "name": "view-list",
     "props": {
       "views": {"type": Array, "required": true},
+      "value": {"type": Number, "required": true},
     },
     "methods": {
-      "onSelect": function (item) {
-        this.$emit("select", item);
+      "onSelect": function (index) {
+        this.$emit("input", index);
       },
       "selectVariant": function(item) {
         switch(item.status) {
@@ -34,7 +36,7 @@
           default:
             return null;
         }
-      }
+      },
     },
   }
 </script>

@@ -14,7 +14,7 @@
         is-nav
       >
         <acgt-cycles-view-menu
-          v-if="view === ACGT_CYCLES_VIEW"
+          v-if="activeViewName === ACGT_CYCLES_VIEW"
           :data="viewData[ACGT_CYCLES_VIEW]"
         />
       </b-collapse>
@@ -30,8 +30,8 @@
           class="scroll-window"
         >
           <view-list
+            v-model="activeViewIndex"
             :views="viewsList"
-            @select="onSelectView"
           />
         </b-col>
         <b-col
@@ -40,43 +40,43 @@
           class="fixed-window"
         >
           <summary-view
-            v-if="view === SUMMARY_VIEW"
+            v-if="activeViewName === SUMMARY_VIEW"
             :data="data"
             :options="options"
           />
           <acgt-cycles-view
-            v-if="view === ACGT_CYCLES_VIEW"
+            v-if="activeViewName === ACGT_CYCLES_VIEW"
             :data="data"
             :menu-data="viewData[ACGT_CYCLES_VIEW]"
             :options="options"
             :resize-notification="resizeNotification"
           />
           <gc-content-view
-            v-if="view === GC_CONTENT_VIEW"
+            v-if="activeViewName === GC_CONTENT_VIEW"
             :data="data"
             :options="options"
             :resize-notification="resizeNotification"
           />
           <indel-cycle-view
-            v-if="view === INDEL_CYCLES_VIEW"
+            v-if="activeViewName === INDEL_CYCLES_VIEW"
             :data="data"
             :options="options"
             :resize-notification="resizeNotification"
           />
           <insert-size-view
-            v-if="view === INSERT_SIZE_VIEW"
+            v-if="activeViewName === INSERT_SIZE_VIEW"
             :data="data"
             :options="options"
             :resize-notification="resizeNotification"
           />
           <quality-2-view
-            v-if="view === QUALITY_2_VIEW"
+            v-if="activeViewName === QUALITY_2_VIEW"
             :data="data"
             :options="options"
             :resize-notification="resizeNotification"
           />
           <quality-3-view
-            v-if="view === QUALITY_3_VIEW"
+            v-if="activeViewName === QUALITY_3_VIEW"
             :data="data"
             :options="options"
             :resize-notification="resizeNotification"
@@ -160,7 +160,7 @@
       "view-list": ViewList,
       "summary-view": SummaryView,
       "acgt-cycles-view": AcgtCyclesView,
-      "acgt-cycles-view-menu":AcgtCyclesViewMenu,
+      "acgt-cycles-view-menu": AcgtCyclesViewMenu,
       "indel-cycle-view": IndelCycleView,
       "insert-size-view": InsertSizeView,
       "gc-content-view": GcConventView,
@@ -170,17 +170,21 @@
     },
     "data": () => ({
       ...viewsNames,
-      "view": ACGT_CYCLES_VIEW,
       "data": loadBchkFile(window.rmme_data),
       "options": createDefaultOptions(),
       "resizeNotification": {},
+      "activeViewIndex": 0,
       "viewData": {
         [ACGT_CYCLES_VIEW]: AcgtCyclesView.menuData
       },
     }),
     "mounted": function () {
+      // TODO Unmount on destroy?
       window.addEventListener("resize", () => {
         this.resizeNotification = {};
+      });
+      document.addEventListener("keyup", (event) => {
+        this.onPageKeyUp(event)
       });
     },
     "computed": {
@@ -196,11 +200,21 @@
           result.push(newItem);
         });
         return result;
-      }
+      },
+      "activeViewName": function() {
+        return viewsList[this.activeViewIndex]["value"];
+      },
     },
     "methods": {
-      "onSelectView": function (view) {
-        this.view = view.value;
+      "onPageKeyUp": function (event) {
+        if (event.key === "ArrowUp") {
+          this.activeViewIndex = Math.max(0, this.activeViewIndex - 1);
+          event.preventDefault();
+        } else if (event.key === "ArrowDown") {
+          this.activeViewIndex = Math.min(
+            viewsList.length - 1, this.activeViewIndex + 1);
+          event.preventDefault();
+        }
       }
     }
   }
