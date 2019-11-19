@@ -32,15 +32,6 @@ export function computeMargin(yRange, defaultMargin = {}) {
     "left": 40,
     ...defaultMargin
   };
-  if (yRange[1] > 1000) {
-    margin.left = 40;
-  }
-  if (yRange[1] > 10000) {
-    margin.left = 50;
-  }
-  if (yRange[1] > 1000000) {
-    margin.left = 60;
-  }
   return margin;
 }
 
@@ -82,10 +73,29 @@ export function addXLinearScale(svg, range, layout) {
   return scale;
 }
 
-export function addYLinearScale(svg, range, layout) {
+export function addYLinearScale(svg, range, layout, args = {}) {
+  args = {
+    "useScientificNotation": false,
+    // Allow to specify a threshold from which the scientific notation is used.
+    "scientificNotationValue": 0,
+    ...args
+  };
+
   const scale = d3.scaleLinear()
     .domain(range)
     .range([layout.height, 0]);
+
+  let format = (value) => value;
+  if (args.useScientificNotation) {
+    const d3Format = d3.format(".1e");
+    format = (value) => {
+      if (value > args.scientificNotationValue) {
+        return d3Format(value);
+      } else {
+        return value;
+      }
+    }
+  }
 
   svg.append("g")
     .call(
@@ -93,6 +103,7 @@ export function addYLinearScale(svg, range, layout) {
       // Hide the first and the last tick.
         .tickSize(0)
         .tickSizeInner(5)
+        .tickFormat(format)
     );
 
   return scale;
@@ -285,7 +296,6 @@ export function focusMouseMoveMultiDataStrategy(
     "focusText": focusText
   };
 }
-
 
 export function addGrid(svg, x, y, layout) {
 

@@ -3,6 +3,7 @@
     <d3-line-plot
       :data="plotData"
       :resize-notification="resizeNotification"
+      :args="args"
     />
   </div>
 </template>
@@ -22,7 +23,11 @@
       "d3-line-plot": LinePlot,
     },
     "data": () => ({
-      "examples": []
+      "args": {
+        "yScale": {
+          "useScientificNotation": true
+        },
+      }
     }),
     "props": {
       "data": {"type": Object, "required": true},

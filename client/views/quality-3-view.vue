@@ -44,7 +44,10 @@
     },
     "data": () => ({
       "args": {
-        "useFocus": false
+        "useFocus": false,
+        "yScale": {
+          "useScientificNotation": true
+        },
       }
     }),
     "props": {

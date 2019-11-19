@@ -41,6 +41,9 @@
           "higher": 0.01,
           "lower": 0.0,
         },
+        "yScale": {
+
+        },
         ...this.args
       };
       const xRange = range(this.data, (item) => item["x"], args.xRange);
@@ -50,7 +53,7 @@
 
       let svg = appendGraphSvg(d3Select(this.$el), layout, margin);
       const x = addXLinearScale(svg, xRange, layout);
-      const y = addYLinearScale(svg, yRange, layout);
+      const y = addYLinearScale(svg, yRange, layout, args["yScale"]);
 
       // TODO Make as an option.
       const colors = d3ScaleOrdinal(d3SchemeAccent);

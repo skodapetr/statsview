@@ -6,7 +6,7 @@
     <b-row style="height: 100%">
       <b-col
         md="6"
-        style="height: 100%"
+        style="height: 100%;padding: 0;"
       >
         <d3-line-area-plot
           :line="ffqLineData"
@@ -17,7 +17,7 @@
       </b-col>
       <b-col
         md="6"
-        style="height: 100%"
+        style="height: 100%;padding: 0;"
       >
         <d3-line-area-plot
           :line="lfqLineData"
