@@ -42,14 +42,6 @@
     "components": {
       "d3-line-plot": LinePlot,
     },
-    "data": () => ({
-      "args": {
-        "useFocus": false,
-        "yScale": {
-          "useScientificNotation": true
-        },
-      }
-    }),
     "props": {
       "data": {"type": Object, "required": true},
       "options": {"type": Object, "required": true},
@@ -58,7 +50,6 @@
     "computed": {
       "ffqData": function () {
         const data = selectData(this.data)["FFQ"];
-        const options = selectData(this.options);
         const x = rangeByStep(0, data[0].length, 1);
         return data.map((values, index) => ({
           "label": "Cycle " + index,
@@ -69,7 +60,6 @@
       },
       "lfqData": function () {
         const data = selectData(this.data)["LFQ"];
-        const options = selectData(this.options);
         const x = rangeByStep(0, data[0].length, 1);
         return data.map((values, index) => ({
           "label": "Cycle " + index,
@@ -77,7 +67,17 @@
           "y": values,
           "x": x
         }));
-      }
+      },
+      "args": function() {
+        const options = selectData(this.options);
+        return {
+          "useFocus": false,
+          "yScale": {
+            "useScientificNotation": true
+          },
+          "margin": options["margin"]
+        };
+      },
     }
   };
 

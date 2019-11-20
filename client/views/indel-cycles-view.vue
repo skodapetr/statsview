@@ -3,6 +3,7 @@
     <d3-line-plot
       :data="plotData"
       :resize-notification="resizeNotification"
+      :args="args"
     />
   </div>
 </template>
@@ -37,30 +38,36 @@
         return [
           {
             "label": "Insertions (Fwd)",
-            "color": options.insertionsFwd,
-            "y": data.insertionsFwd,
+            "color": options["insertionsFwd"],
+            "y": data["insertionsFwd"],
             "x": x,
           },
           {
             "label": "Insertions (Rev)",
-            "color": options.insertionsRev,
-            "y": data.insertionsRev,
+            "color": options["insertionsRev"],
+            "y": data["insertionsRev"],
             "x": x,
           },
           {
             "label": "Deletions (Fwd)",
-            "color": options.deletionsFwd,
-            "y": data.deletionsFwd,
+            "color": options["deletionsFwd"],
+            "y": data["deletionsFwd"],
             "x": x,
           },
           {
             "label": "Deletions (Rev)",
-            "color": options.deletionsRev,
-            "y": data.deletionsRev,
+            "color": options["deletionsRev"],
+            "y": data["deletionsRev"],
             "x": x,
           },
         ];
-      }
+      },
+      "args": function () {
+        const options = selectData(this.options);
+        return {
+          "margin": options["margin"],
+        }
+      },
     }
   };
 

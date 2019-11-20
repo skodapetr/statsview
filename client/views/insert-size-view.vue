@@ -22,13 +22,6 @@
     "components": {
       "d3-line-plot": LinePlot,
     },
-    "data": () => ({
-      "args": {
-        "yScale": {
-          "useScientificNotation": true
-        },
-      }
-    }),
     "props": {
       "data": {"type": Object, "required": true},
       "options": {"type": Object, "required": true},
@@ -65,7 +58,16 @@
             "x": x,
           }
         ];
-      }
+      },
+      "args": function() {
+        const options = selectData(this.options);
+        return {
+          "yScale": {
+            "useScientificNotation": true
+          },
+          "margin": options["margin"],
+        }
+      },
     }
   };
 

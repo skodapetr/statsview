@@ -34,14 +34,6 @@
       "d3-area-plot": AreaPlot,
       "d3-line-plot": LinePlot,
     },
-    "data": () => ({
-      "args": {
-        "yRange": {
-          "max": 100,
-          "min": 0,
-        }
-      }
-    }),
     "props": {
       "data": {"type": Object, "required": true},
       "menuData": {"type": Object, "required": true},
@@ -55,29 +47,39 @@
         return [
           {
             "label": "A",
-            "color": options.A,
-            "y": data.A,
-            "x": data.cycle,
+            "color": options["A"],
+            "y": data["A"],
+            "x": data["cycle"],
           },
           {
             "label": "C",
-            "color": options.C,
-            "y": data.C,
-            "x": data.cycle,
+            "color": options["C"],
+            "y": data["C"],
+            "x": data["cycle"],
           },
           {
             "label": "G",
-            "color": options.G,
-            "y": data.G,
-            "x": data.cycle,
+            "color": options["G"],
+            "y": data["G"],
+            "x": data["cycle"],
           },
           {
             "label": "T",
-            "color": options.T,
-            "y": data.T,
-            "x": data.cycle,
+            "color": options["T"],
+            "y": data["T"],
+            "x": data["cycle"],
           },
         ];
+      },
+      "args": function () {
+        const options = selectData(this.options);
+        return {
+          "yRange": {
+            "max": 100,
+            "min": 0,
+          },
+          "margin": options["margin"],
+        }
       },
     }
   };

@@ -3,6 +3,7 @@
     <d3-line-plot
       :data="plotData"
       :resize-notification="resizeNotification"
+      :args="args"
     />
   </div>
 </template>
@@ -44,6 +45,12 @@
           }
         ];
       },
+      "args": function() {
+        const options = selectData(this.options);
+        return {
+          "margin": options["margin"],
+        }
+      }
     }
   };
 

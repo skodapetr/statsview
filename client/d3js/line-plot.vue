@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 100%" />
+  <div style="height: 100%"/>
 </template>
 
 <script>
@@ -41,14 +41,13 @@
           "higher": 0.01,
           "lower": 0.0,
         },
-        "yScale": {
-
-        },
+        "yScale": {},
+        "margin": {},
         ...this.args
       };
       const xRange = range(this.data, (item) => item["x"], args.xRange);
       const yRange = range(this.data, (item) => item["y"], args.yRange);
-      const margin = computeMargin(yRange);
+      const margin = computeMargin(yRange, args["margin"]);
       const layout = computeLayout(margin, this.getScreenSize());
 
       let svg = appendGraphSvg(d3Select(this.$el), layout, margin);

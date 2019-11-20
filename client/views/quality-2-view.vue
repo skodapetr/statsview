@@ -44,14 +44,6 @@
     "components": {
       "d3-line-area-plot": LineAreaPlot,
     },
-    "data": () => ({
-      "args": {
-        "yRange": {
-          "max": 50,
-          "min": 0,
-        }
-      }
-    }),
     "props": {
       "data": {"type": Object, "required": true},
       "options": {"type": Object, "required": true},
@@ -117,7 +109,17 @@
             "x": data.bins,
           }
         ];
-      }
+      },
+      "args": function() {
+        const options = selectData(this.options);
+        return {
+          "yRange": {
+            "max": 50,
+            "min": 0,
+          },
+          "margin": options["margin"],
+        }
+      },
     }
   };
 

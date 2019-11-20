@@ -27,6 +27,6 @@
       "onLineGraph": function () {
         this.data.graph = "line";
       }
-    }
+    },
   }
 </script>

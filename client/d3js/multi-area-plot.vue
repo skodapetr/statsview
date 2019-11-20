@@ -27,12 +27,13 @@
     },
     "mounted": function () {
       const args = {
+        "margin": {},
         ...this.args
       };
 
       const xRange = range(this.data, (item) => item["x"], args.xRange);
       const yRange = range(this.data, (item) => item["y"], args.yRange);
-      const margin = computeMargin(yRange);
+      const margin = computeMargin(yRange, args["margin"]);
       const layout = computeLayout(margin, this.getScreenSize(), {
         "yLevels": 4
       });

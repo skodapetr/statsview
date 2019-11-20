@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 100%" />
+  <div style="height: 100%"/>
 </template>
 
 <script>
@@ -28,18 +28,19 @@
     },
     "mounted": function () {
       const args = {
+        "margin": {},
         ...this.args
       };
 
       const allData = [...this.line, ...this.area];
-      const xRange = range(allData, (item) => item["x"],  args.xRange);
+      const xRange = range(allData, (item) => item["x"], args.xRange);
       const yRange = range(allData, (item) => {
         if (item["y"] !== undefined) {
           return item["y"];
         }
         return [...item["y-low"], ...item["y-high"]]
-      },  args.yRange);
-      const margin = computeMargin(yRange);
+      }, args.yRange);
+      const margin = computeMargin(yRange, args["margin"]);
       const layout = computeLayout(margin, this.getScreenSize());
 
       let svg = appendGraphSvg(d3Select(this.$el), layout, margin);
