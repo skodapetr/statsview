@@ -14,7 +14,7 @@
 </template>
 
 <script>
-  import {STATUS_OK, STATUS_WARNING, STATUS_INVALID} from "./data-status";
+  import {STATUS_OK, STATUS_WARNING, STATUS_INVALID} from "./../data-status";
 
   export default {
     "name": "view-list",

@@ -14,7 +14,8 @@
     range,
     computeMargin,
     computeLayout,
-    appendGraphSvg,
+    createGraphSvg,
+    configureGraphSvg,
     addXLinearScale,
     addYLinearScale,
     addFocusLine,
@@ -30,69 +31,19 @@
       "resizeNotification": {"type": Object, "required": true},
       "args": {"type": Object, "default": () => ({})},
     },
+    "data": () => ({
+      "svg": null
+    }),
     "mounted": function () {
-      const args = {
-        "useFocus": true,
-        "xRange": {
-          "higher": 0.01,
-          "lower": 0.0,
-        },
-        "yRange": {
-          "higher": 0.01,
-          "lower": 0.0,
-        },
-        "yScale": {},
-        "margin": {},
-        ...this.args
-      };
-      const xRange = range(this.data, (item) => item["x"], args.xRange);
-      const yRange = range(this.data, (item) => item["y"], args.yRange);
-      const margin = computeMargin(yRange, args["margin"]);
-      const layout = computeLayout(margin, this.getScreenSize());
-
-      let svg = appendGraphSvg(d3Select(this.$el), layout, margin);
-      const x = addXLinearScale(svg, xRange, layout);
-      const y = addYLinearScale(svg, yRange, layout, args["yScale"]);
-
-      // TODO Make as an option.
-      const colors = d3ScaleOrdinal(d3SchemeAccent);
-      svg
-        .selectAll("g.path")
-        .data(this.data)
-        .enter()
-        .append("g")
-        .attr("class", "path")
-        .append("path")
-        .attr("fill", "none")
-        .attr("stroke", (data, index) => {
-          if (data["color"]) {
-            return data["color"];
-          } else {
-            return colors(index);
-          }
-        })
-        .attr("stroke-width", 1.5)
-        .attr("d", function (data) {
-            return d3Line()
-              .x(function (_, index) {
-                return x(data.x[index]);
-              })
-              .y(function (_, index) {
-                return y(data.y[index]);
-              })(data.x);
-          }
-        );
-
-      if (args.useFocus) {
-        addFocusLine(svg, x, y, layout, this.data, this.args);
-      }
-
-      addGrid(svg, x, y, layout);
-
+      this.svg = createGraphSvg(d3Select(this.$el));
+      this.onPlot();
     },
     "watch": {
       "resizeNotification": function () {
-
+        this.onPlot();
+      },
+      "data": function () {
+        this.onPlot();
       }
     },
     "methods": {
@@ -102,8 +53,74 @@
           "width": element.offsetWidth,
           "height": element.offsetHeight
         };
+      },
+      "onPlot": function () {
+        const args = getArgs(this.args);
+        const xRange = range(this.data, (item) => item["x"], args.xRange);
+        const yRange = range(this.data, (item) => item["y"], args.yRange);
+        const margin = computeMargin(yRange, args["margin"]);
+        const layout = computeLayout(margin, this.getScreenSize());
+
+        const plot = configureGraphSvg(this.svg, layout, margin);
+        const x = addXLinearScale(plot, xRange, layout);
+        const y = addYLinearScale(plot, yRange, layout, args["yScale"]);
+        const colors = d3ScaleOrdinal(d3SchemeAccent);
+
+        const lines = plot.selectAll("path.plot-line").data(this.data);
+        lines.exit().remove();
+        lines.enter()
+          .append("path")
+          .attr("class", "plot-line")
+          .attr("fill", "none")
+          .attr("stroke-width", 1.5)
+          .merge(lines)
+          .attr("stroke", selectColorFactory(colors))
+          .attr("d", getLinePathFactory(x, y));
+
+        if (args.useFocus) {
+          addFocusLine(plot, x, y, layout, this.data, this.args);
+        }
+
+        addGrid(plot, x, y, layout);
       }
     }
+  }
+
+  function getArgs(args) {
+    return {
+      "useFocus": true,
+      "xRange": {
+        "higher": 0.01,
+        "lower": 0.0,
+      },
+      "yRange": {
+        "higher": 0.01,
+        "lower": 0.0,
+      },
+      "yScale": {},
+      "margin": {},
+      ...args
+    };
+  }
+
+  function selectColorFactory(colors) {
+    return (data, index) => {
+      if (data["color"]) {
+        return data["color"];
+      } else {
+        return colors(index);
+      }
+    };
+  }
+
+  function getLinePathFactory(x, y) {
+    return (data) => d3Line()
+      .x(function (_, index) {
+        return x(data.x[index]);
+      })
+      .y(function (_, index) {
+        return y(data.y[index]);
+      })(data.x);
   }
 
 </script>

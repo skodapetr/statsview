@@ -47,12 +47,17 @@ export function computeLayout(margin, size, args = {}) {
   }
 }
 
-export function appendGraphSvg(selection, layout, margin) {
-  return selection
-    .append("svg")
+export function createGraphSvg(svg) {
+  const result = svg.append("svg");
+  result.append("g");
+  return result;
+}
+
+export function configureGraphSvg(svg, layout, margin) {
+  return svg
     .attr("width", layout.width + margin.left + margin.right)
     .attr("height", layout.height + margin.top + margin.bottom)
-    .append("g")
+    .select("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 }
 
@@ -61,7 +66,11 @@ export function addXLinearScale(svg, range, layout) {
     .domain(range)
     .range([0, layout.width]);
 
-  svg.append("g")
+  let axis = selectOrCreate(
+    svg, "g.x-linear",
+    () => svg.append("g").attr("class", "x-linear"));
+
+  axis
     .attr("transform", "translate(0," + layout.height + ")")
     .call(
       d3.axisBottom(scale)
@@ -71,6 +80,15 @@ export function addXLinearScale(svg, range, layout) {
     );
 
   return scale;
+}
+
+function selectOrCreate(selection, selector, factory) {
+  let result = selection.selectAll(selector);
+  if (result.empty()) {
+    return factory();
+  } else {
+    return result;
+  }
 }
 
 export function addYLinearScale(svg, range, layout, args = {}) {
@@ -97,7 +115,11 @@ export function addYLinearScale(svg, range, layout, args = {}) {
     }
   }
 
-  svg.append("g")
+  let axis = selectOrCreate(
+    svg, "g.y-linear",
+    () => svg.append("g").attr("class", "y-linear"));
+
+  axis
     .call(
       d3.axisLeft(scale)
       // Hide the first and the last tick.
@@ -116,17 +138,20 @@ export function addFocusLine(svg, x, y, layout, data, args = {}) {
     ...args
   };
 
-  const lines = svg
-    .append("g")
-    .append("line")
-    .style("fill", "none")
-    .attr("stroke", "black")
-    .style("opacity", 0);
+  let lines = svg.selectAll("g.focus-line line");
+  if (lines.empty()) {
+    lines = svg.append("g")
+      .attr("class", "focus-line")
+      .append("line")
+      .style("fill", "none")
+      .attr("stroke", "black")
+      .style("opacity", 0);
+  }
 
   // Set bottom of focus line, either to fixed value or
   // to minimum of all values.
-  if (args.yMin !== undefined) {
-    lines.attr("y1", y(args.yMin))
+  if (args.yRange && args.yRange.min !== undefined) {
+    lines.attr("y1", y(args.yRange.min))
   } else {
     lines.attr("y1", y(d3.min(data.map((item) => d3.min(item.y)))))
   }
@@ -136,8 +161,9 @@ export function addFocusLine(svg, x, y, layout, data, args = {}) {
   const {mousemove, focusText} =
     args.focusMouseMove(svg, x, y, data, args, lineNodes);
 
-  svg
-    .append("rect")
+  selectOrCreate(
+    svg, "rect.focus-rect",
+    () => svg.append("rect").attr("class", "focus-rect"))
     .style("fill", "none")
     .style("pointer-events", "all")
     .attr("width", layout.width)
@@ -163,30 +189,35 @@ function defaultLabel(data, valueY, valueX) {
 }
 
 export function focusMouseMoveStrategy(
-  svg, x, y, data, args, focusNodes) {
+  svg, x, y, data, args, focusLines) {
 
-  assert(focusNodes.length === 1,
+  assert(focusLines.length === 1,
     "Only one focus node can be provided.");
 
-  const focusNode = focusNodes[0];
+  const focusNode = focusLines[0];
 
-  let focusText = svg
-    .append("g")
-    .selectAll("text")
-    .data(data)
+  let focusText = svg.selectAll("text.focus-text").data(data);
+  const wasThereTextBefore = !focusText.empty();
+  focusText.exit().remove();
+  focusText = focusText
     .enter()
     .append("text")
+    .attr("class", "focus-text")
     .style("opacity", 0)
     .attr("text-anchor", "left")
-    .attr("fill", (item) => item.color)
-    .attr("alignment-baseline", "middle");
+    .attr("alignment-baseline", "middle")
+    .merge(focusText)
+    .attr("fill", (item) => item.color);
 
   // We go from bottom-up, as
   // we have multiple lines and it is not clear where should we stop.
   focusNode.attr("y2", y(d3.max(data.map((item) => item.y))));
 
+  // We keep the last mouse value for purpose of update
+  // after graph change.
   function mousemove() {
     const mouse = d3.mouse(this);
+
     const mouseX = x.invert(mouse[0]);
     const textLines = [];
 
@@ -209,6 +240,11 @@ export function focusMouseMoveStrategy(
       .html((_, index) => textLines[index])
       .attr("x", x(valueX) + 15)
       .attr("y", (data, index) => mouse[1] + index * 15)
+  }
+
+  // If there was text before, we need to update it.
+  if (wasThereTextBefore) {
+    // TODO Update text.
   }
 
   return {
@@ -259,12 +295,17 @@ export function focusMouseMoveMultiDataStrategy(
   assert(focusNodes.length === data.length,
     "Number of data and focus nodes need to be equal.");
 
-  const focusText = svg
-    .append("g")
-    .append("text")
-    .style("opacity", 0)
-    .attr("text-anchor", "left")
-    .attr("alignment-baseline", "middle");
+  let focusText = svg.select("text.focus-text");
+  const wasThereTextBefore = !focusText.empty();
+  if (!wasThereTextBefore) {
+    focusText = svg
+      .append("text")
+      .attr("class", "focus-text")
+      .style("opacity", 0)
+      .attr("text-anchor", "left")
+      .attr("alignment-baseline", "middle");
+  }
+
   const focusTextNodes = focusText.nodes().map(d3.select);
 
   function mousemove() {
@@ -278,8 +319,7 @@ export function focusMouseMoveMultiDataStrategy(
       const activeFocus = focusNodes[index];
       activeFocus
         .attr("x1", x(valueX))
-        .attr("x2", x(valueX))
-        .attr("y2", y(valueY));
+        .attr("x2", x(valueX));
 
       // TODO Allow for multiline text and move left/right from the line.
 
@@ -287,8 +327,13 @@ export function focusMouseMoveMultiDataStrategy(
       activeText
         .html(args.focusLabel(dataRecord, valueY, valueX))
         .attr("x", x(valueX) + 15)
-        .attr("y", y(valueY) + 20)
+        .attr("y", y(valueY) -5 )
     }
+  }
+
+  // If there was text before, we need to update it.
+  if (wasThereTextBefore) {
+    // TODO Update text.
   }
 
   return {
@@ -299,8 +344,7 @@ export function focusMouseMoveMultiDataStrategy(
 
 export function addGrid(svg, x, y, layout) {
 
-  svg.append("g")
-    .attr("class", "grid")
+  selectOrCreate(svg, "g.grid-x", () => svg.append("g").attr("class", "grid-x"))
     .attr("transform", "translate(0," + layout.height + ")")
     .attr("stroke-dasharray", "2,2")
     .call(
@@ -310,8 +354,7 @@ export function addGrid(svg, x, y, layout) {
     )
     .call(g => g.select(".domain").remove());
 
-  svg.append("g")
-    .attr("class", "grid")
+  selectOrCreate(svg, "g.grid-y", () => svg.append("g").attr("class", "grid-y"))
     .attr("stroke-dasharray", "2,2")
     .call(
       d3.axisLeft(y)
