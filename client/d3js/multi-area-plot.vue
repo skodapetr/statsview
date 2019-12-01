@@ -112,7 +112,6 @@
 
   function getLinePathFactory(x, y, yRange) {
     return (data) => {
-      console.log(">", data);
       return d3Area()
         .x((_, index) => x(data.x[index]))
         .y0(y(yRange[0]))
