@@ -59,43 +59,43 @@
         >
           <summary-view
             v-if="activeViewName === SUMMARY_VIEW"
-            :data="files[activeFileIndex].content"
+            :data="activeViewData"
             :options="options"
           />
           <acgt-cycles-view
             v-if="activeViewName === ACGT_CYCLES_VIEW"
-            :data="files[activeFileIndex].content"
+            :data="activeViewData"
             :menu-data="viewData[ACGT_CYCLES_VIEW]"
             :options="options"
             :resize-notification="resizeNotification"
           />
           <gc-content-view
             v-if="activeViewName === GC_CONTENT_VIEW"
-            :data="files[activeFileIndex].content"
+            :data="activeViewData"
             :options="options"
             :resize-notification="resizeNotification"
           />
           <indel-cycle-view
             v-if="activeViewName === INDEL_CYCLES_VIEW"
-            :data="files[activeFileIndex].content"
+            :data="activeViewData"
             :options="options"
             :resize-notification="resizeNotification"
           />
           <insert-size-view
             v-if="activeViewName === INSERT_SIZE_VIEW"
-            :data="files[activeFileIndex].content"
+            :data="activeViewData"
             :options="options"
             :resize-notification="resizeNotification"
           />
           <quality-2-view
             v-if="activeViewName === QUALITY_2_VIEW"
-            :data="files[activeFileIndex].content"
+            :data="activeViewData"
             :options="options"
             :resize-notification="resizeNotification"
           />
           <quality-3-view
             v-if="activeViewName === QUALITY_3_VIEW"
-            :data="files[activeFileIndex].content"
+            :data="activeViewData"
             :options="options"
             :resize-notification="resizeNotification"
           />
@@ -103,13 +103,17 @@
       </b-row>
     </b-container>
     <div class="circle-menu">
-      <half-circle-list/>
+      <half-circle-list
+        v-model="activeExample"
+        :data="activeViewExamples"
+      />
     </div>
   </div>
 </template>
 
 <script>
   import {loadBchkFile} from "./bchk-reader";
+  import {getNegativeExamples} from "./negative-data-examples";
   import CircleList from "./ui/half-circle-list";
   import ViewList from "./ui/view-list";
   import SummaryView from "./views/summary-view";
@@ -144,30 +148,37 @@
     {
       "label": SummaryView.label,
       "value": SUMMARY_VIEW,
+      "examples": [],
     }, {
       "validator": AcgtCyclesView.validator,
       "label": AcgtCyclesView.label,
       "value": ACGT_CYCLES_VIEW,
+      "examples": getNegativeExamples("acgt-cycles"),
     }, {
       "validator": GcConventView.validator,
       "label": GcConventView.label,
       "value": GC_CONTENT_VIEW,
+      "examples": getNegativeExamples("gc-content"),
     }, {
       "validator": IndelCycleView.validator,
       "label": IndelCycleView.label,
       "value": INDEL_CYCLES_VIEW,
+      "examples": getNegativeExamples("indel-cycles"),
     }, {
       "validator": InsertSizeView.validator,
       "label": InsertSizeView.label,
       "value": INSERT_SIZE_VIEW,
+      "examples": getNegativeExamples("insert-size"),
     }, {
       "validator": Quality2View.validator,
       "label": Quality2View.label,
       "value": QUALITY_2_VIEW,
+      "examples": getNegativeExamples("quality-2"),
     }, {
       "validator": Quality3View.validator,
       "label": Quality3View.label,
       "value": QUALITY_3_VIEW,
+      "examples": getNegativeExamples("quality-3"),
     }
   ];
 
@@ -188,6 +199,7 @@
     "data": () => ({
       ...viewsNames,
       "activeFileIndex": 0,
+      "activeExample": -1,
       "files": [
         {
           "name": "default 1",
@@ -199,7 +211,8 @@
       ],
       "options": createDefaultOptions(),
       "resizeNotification": {},
-      "activeViewIndex": 0,
+      "activeViewIndex": SUMMARY_VIEW,
+      // Used to share view data between view and view-menu.
       "viewData": {
         [ACGT_CYCLES_VIEW]: AcgtCyclesView.menuData
       },
@@ -228,8 +241,18 @@
         return result;
       },
       "activeViewName": function () {
-        return viewsList[this.activeViewIndex]["value"];
+        return viewsList[this.activeViewIndex].value;
       },
+      "activeViewData": function() {
+        if (this.activeExample === -1) {
+          return this.files[this.activeFileIndex].content;
+        }
+        const activeViewItem = viewsList[this.activeViewIndex];
+        return activeViewItem.examples[this.activeExample].content;
+      },
+      "activeViewExamples": function() {
+        return viewsList[this.activeViewIndex].examples;
+      }
     },
     "methods": {
       "onPageKeyUp": function (event) {

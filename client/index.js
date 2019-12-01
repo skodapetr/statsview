@@ -12,14 +12,24 @@ import App from "./application";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
 
-import { library } from "@fortawesome/fontawesome-svg-core";
-import { faPlus, faMinus, faEye, faCog, faUpload } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import {library} from "@fortawesome/fontawesome-svg-core";
+import {
+  faPlus,
+  faMinus,
+  faEye,
+  faCog,
+  faUpload,
+  faAngleRight,
+  faAngleLeft
+} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 import "./data.js";
 
 // Add icons we need.
-library.add([faPlus, faMinus, faEye, faCog, faUpload]);
+library.add([
+  faPlus, faMinus, faEye, faCog, faUpload, faAngleRight, faAngleLeft
+]);
 
 Vue.config.productionTip = false;
 

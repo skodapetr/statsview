@@ -1,5 +1,6 @@
 <template>
   <div
+    v-show="data.length > 0"
     id="menu"
     @mouseleave="onDeactivate"
   >
@@ -11,15 +12,18 @@
         </div>
       </span>
     </label>
-    <div id="menu-items">
-      <div>
-        <font-awesome-icon icon="minus"/>
-      </div>
-      <div>
-        <font-awesome-icon icon="eye"/>
-      </div>
-      <div>
-        <font-awesome-icon icon="plus"/>
+    <div id="menu-items" :style="menuStyle">
+      <div
+        v-for="(item, index) in data"
+        :key="index"
+        class="negative">
+        <!-- By this we allow to show the original graph between items. -->
+        <span
+          @mouseenter="onSelect(index)"
+          @mouseleave="onDeselect(index)"
+        >
+          <font-awesome-icon icon="minus"/>
+        </span>
       </div>
     </div>
   </div>
@@ -33,14 +37,43 @@
     "data": () => ({
       "visible": false
     }),
+    "props": {
+      "data": {"type": Array, "required": true},
+      "value": {"type": Number, "required": true},
+    },
+    "computed": {
+      "menuStyle": function () {
+        if (!this.visible) {
+          return {
+            "width": 0,
+            "left": 0,
+            "height": 0,
+          };
+        }
+        const width = this.data.length * 6;
+        const left = -(width / 2) + 1.5;
+        return {
+          "width": width + "rem",
+          "left": left + "rem",
+          "height": "4.0rem",
+        };
+      },
+    },
     "methods": {
       "onActivate": function () {
         this.visible = true;
       },
       "onDeactivate": function () {
         this.visible = false;
+        this.$emit("input", -1);
+      },
+      "onSelect": function (value) {
+        this.$emit("input", value)
+      },
+      "onDeselect": function () {
+        this.$emit("input", -1);
       }
-    }
+    },
   }
 </script>
 
@@ -71,7 +104,7 @@
     pointer-events: none;
   }
 
-  /* The spans inside the on button will rotate */
+  /* The spans inside the on button. */
   #activator > span {
     -webkit-transition: all 0.3s linear;
     -moz-transition: all 0.3s linear;
@@ -120,30 +153,28 @@
     -ms-transition: all 0.2s linear;
     -o-transition: all 0.2s linear;
     transition: all 0.2s linear;
-    padding-left: 0.8rem;
     border-radius: 20px;
-  }
-
-  /* Sprawl out the menu items when the on button is checked */
-  #on-check:checked ~ #menu-items {
-    width: 23.3rem;
-    height: 5rem;
-    left: -10rem;
   }
 
   #menu-items div {
     position: relative;
     display: inline-block;
     justify-content: center;
-    margin: 1rem;
+    margin: 0.5rem;
+    margin-top: 1.0rem;
     width: 5rem;
     height: 3rem;
-    font-size: 3rem;
+    font-size: 2.5rem;
+    cursor: pointer;
   }
 
   #menu-items div svg {
     display: block;
     margin: auto;
+  }
+
+  .negative:hover {
+    color: red;
   }
 
 </style>
