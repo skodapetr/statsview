@@ -1,6 +1,8 @@
 <template>
   <div style="height: 100%">
+    <no-data v-if="!dataAvailable" />
     <d3-line-plot
+      v-else
       :data="plotData"
       :resize-notification="resizeNotification"
       :args="args"
@@ -10,6 +12,7 @@
 
 <script>
   import LinePlot from "../d3js/line-plot";
+  import NoData from "../ui/no-data";
 
   import {rangeByStep} from "./views-utils";
   import {STATUS_OK, STATUS_WARNING, STATUS_INVALID} from "../data-status";
@@ -21,6 +24,7 @@
     "name": "gc-content",
     "components": {
       "d3-line-plot": LinePlot,
+      "no-data": NoData,
     },
     "props": {
       "data": {"type": Object, "required": true},
@@ -28,6 +32,9 @@
       "resizeNotification": {"type": Object, "require": true},
     },
     "computed": {
+      "dataAvailable": function(){
+        return selectData(this.data) != null;
+      },
       "plotData": function () {
         const data = selectData(this.data);
         const options = selectData(this.options);

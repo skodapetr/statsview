@@ -19,61 +19,79 @@ export function loadBchkFile(content) {
     }
   });
 
-  const insertSize = transposeMatrix(raw["IS"], [
-    {"index": 0, "name": "insertSize"},
-    {"index": 1, "name": "pairsTotal"},
-    {"index": 2, "name": "inwardOrientedPairs"},
-    {"index": 3, "name": "outwardOrientedPairs"},
-    {"index": 4, "name": "otherPairs"},
-  ]);
+  let insertSize = null;
+  if (raw["IS"]) {
+    insertSize = transposeMatrix(raw["IS"], [
+      {"index": 0, "name": "insertSize"},
+      {"index": 1, "name": "pairsTotal"},
+      {"index": 2, "name": "inwardOrientedPairs"},
+      {"index": 3, "name": "outwardOrientedPairs"},
+      {"index": 4, "name": "otherPairs"},
+    ]);
+  }
 
   // Show as a normalized values (Y) for bins (X).
   // We use GCF and GCL
-  const gcContent = {
-    ...transposeMatrix(raw["GCF"], [
-      {"index": 0, "name": "gcf-x"},
-      {"index": 1, "name": "gcf-y"},
-    ]),
-    ...transposeMatrix(raw["GCL"], [
-      {"index": 0, "name": "gcl-x"},
-      {"index": 1, "name": "gcl-y"},
-    ])
-  };
-  gcContent["gcf-y"] = normalize(gcContent["gcf-y"]);
-  gcContent["gcl-y"] = normalize(gcContent["gcl-y"]);
+  let gcContent = null;
+  if (raw["GCF"] && raw["GCL"]) {
+    gcContent = {
+      ...transposeMatrix(raw["GCF"], [
+        {"index": 0, "name": "gcf-x"},
+        {"index": 1, "name": "gcf-y"},
+      ]),
+      ...transposeMatrix(raw["GCL"], [
+        {"index": 0, "name": "gcl-x"},
+        {"index": 1, "name": "gcl-y"},
+      ])
+    };
+    gcContent["gcf-y"] = normalize(gcContent["gcf-y"]);
+    gcContent["gcl-y"] = normalize(gcContent["gcl-y"]);
+  }
 
-  const acgtCycles = transposeMatrix(raw["GCC"], [
-    {"index": 0, "name": "cycle"},
-    {"index": 1, "name": "A"},
-    {"index": 2, "name": "C"},
-    {"index": 3, "name": "G"},
-    {"index": 4, "name": "T"},
-  ]);
+  let acgtCycles = null;
+  if (raw["GCC"]) {
+    acgtCycles = transposeMatrix(raw["GCC"], [
+      {"index": 0, "name": "cycle"},
+      {"index": 1, "name": "A"},
+      {"index": 2, "name": "C"},
+      {"index": 3, "name": "G"},
+      {"index": 4, "name": "T"},
+    ]);
+  }
 
-  const indelCycles = transposeMatrix(raw["IC"], [
-    {"index": 1, "name": "insertionsFwd"},
-    {"index": 2, "name": "insertionsRev"},
-    {"index": 3, "name": "deletionsFwd"},
-    {"index": 4, "name": "deletionsRev"},
-  ]);
+  let indelCycles = null;
+
+  if (raw["IC"]) {
+    indelCycles = transposeMatrix(raw["IC"], [
+      {"index": 1, "name": "insertionsFwd"},
+      {"index": 2, "name": "insertionsRev"},
+      {"index": 3, "name": "deletionsFwd"},
+      {"index": 4, "name": "deletionsRev"},
+    ]);
+  }
 
   // FFQ {quality bin X } {... values = Y}
   // show median, min, percentil for Y
   // LFQ -> kazde jeden obrazek
   // X = 0 - 75 (cycle)
-  const quality2 = {
-    "FFQ": createQuality2Graph(raw["FFQ"]),
-    "LFQ": createQuality2Graph(raw["LFQ"])
-  };
+  let quality2 = null;
+  if (raw["FFQ"] && raw["LFQ"]) {
+    quality2 = {
+      "FFQ": createQuality2Graph(raw["FFQ"]),
+      "LFQ": createQuality2Graph(raw["LFQ"])
+    };
+  }
 
   // FFQ, LFQ
   // Data na radku (krome prvniho) jsou udaje pro krivku
   const quality3Fnc = (values) => values.slice(1).map((value) => Number(value));
-  const quality3 = {
-    "FFQ": raw["FFQ"].map(quality3Fnc),
-    "LFQ": raw["FFQ"].map(quality3Fnc)
-  };
-
+  let quality3 = null;
+  if (raw["FFQ"] && raw["LFQ"]) {
+    quality3 = {
+      "FFQ": raw["FFQ"].map(quality3Fnc),
+      "LFQ": raw["FFQ"].map(quality3Fnc)
+    };
+  }
   return {
     "summary": summary,
     "insert-size": insertSize,

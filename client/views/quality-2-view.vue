@@ -3,7 +3,11 @@
     style="height: 100%"
     fluid
   >
-    <b-row style="height: 100%">
+    <no-data v-if="!dataAvailable"/>
+    <b-row
+      v-else
+      style="height: 100%"
+    >
       <b-col
         md="6"
         style="height: 100%;padding: 0;"
@@ -32,6 +36,7 @@
 
 <script>
   import LineAreaPlot from "../d3js/line-area-plot";
+  import NoData from "../ui/no-data";
 
   import {rangeByStep} from "./views-utils";
   import {STATUS_OK, STATUS_WARNING, STATUS_INVALID} from "../data-status";
@@ -43,6 +48,7 @@
     "name": "quality-2",
     "components": {
       "d3-line-area-plot": LineAreaPlot,
+      "no-data": NoData,
     },
     "props": {
       "data": {"type": Object, "required": true},
@@ -50,6 +56,9 @@
       "resizeNotification": {"type": Object, "require": true},
     },
     "computed": {
+      "dataAvailable": function () {
+        return selectData(this.data) != null;
+      },
       "ffqLineData": function () {
         const data = selectData(this.data)["FFQ"];
         const options = selectData(this.options)["FFQ"];
@@ -110,7 +119,7 @@
           }
         ];
       },
-      "args": function() {
+      "args": function () {
         const options = selectData(this.options);
         return {
           "yRange": {

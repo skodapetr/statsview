@@ -3,7 +3,11 @@
     style="height: 100%"
     fluid
   >
-    <b-row style="height: 100%">
+    <no-data v-if="!dataAvailable" />
+    <b-row
+      v-else
+      style="height: 100%"
+     >
       <b-col
         md="6"
         style="height: 100%"
@@ -30,6 +34,7 @@
 
 <script>
   import LinePlot from "../d3js/line-plot";
+  import NoData from "../ui/no-data";
 
   import {rangeByStep} from "./views-utils";
   import {STATUS_OK, STATUS_WARNING, STATUS_INVALID} from "../data-status";
@@ -41,6 +46,7 @@
     "name": "quality-3",
     "components": {
       "d3-line-plot": LinePlot,
+      "no-data": NoData,
     },
     "props": {
       "data": {"type": Object, "required": true},
@@ -48,6 +54,9 @@
       "resizeNotification": {"type": Object, "require": true},
     },
     "computed": {
+      "dataAvailable": function(){
+        return selectData(this.data) != null;
+      },
       "ffqData": function () {
         const data = selectData(this.data)["FFQ"];
         const x = rangeByStep(0, data[0].length, 1);
