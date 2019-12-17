@@ -3,6 +3,7 @@
     :sm="width.sm"
     :md="width.md"
     class="fixed-window"
+    style="padding-left: 2.2rem"
   >
     <summary-view
       v-if="activeView === 0"

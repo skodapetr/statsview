@@ -24,20 +24,14 @@
           >
           <label for="files">
             <div class="btn file-upload-button">
-              <font-awesome-icon icon="upload" />
+              <font-awesome-icon icon="upload"/>
             </div>
           </label>
         </b-nav-form>
-        <b-navbar-nav v-if="files.length > 1">
+        <b-navbar-nav>
           <span style="margin-right: 1rem; margin-left: 1rem">
             <b>Active file:</b> {{ files[activeFileIndex]["label"] }}
           </span>
-          <b-form-checkbox
-            v-model="showFileList"
-            switch
-          >
-            Show file list
-          </b-form-checkbox>
         </b-navbar-nav>
         <acgt-cycles-view-menu
           v-if="activeViewIndex === 1"
@@ -52,8 +46,8 @@
       <b-row>
         <b-col
           v-if="showFileList"
-          sm="12"
-          md="2"
+          :sm="6"
+          :md="2"
           class="scroll-window"
         >
           <file-list
@@ -63,8 +57,9 @@
           />
         </b-col>
         <b-col
-          :sm="viewListColumnWidth.sm"
-          :md="viewListColumnWidth.md"
+          v-if="showViewList"
+          :sm="6"
+          :md="2"
           class="scroll-window"
         >
           <view-list
@@ -72,6 +67,12 @@
             :views="views"
           />
         </b-col>
+        <left-view-menu-column
+          :files="showFileList"
+          :views="showViewList"
+          @toggleFiles="onToggleFiles"
+          @toggleViews="onToggleViews"
+        />
         <view-column
           :active-view="activeViewIndex"
           :data="activeViewData"
@@ -100,6 +101,7 @@
   import ViewColumn from "./view-column";
   import AcgtCyclesViewMenu from "./views/acgt-cycles-view-menu";
   import viewsList from "./view-list-definition";
+  import LeftViewMenuColumn from "./ui/left-view-menu";
 
   export default {
     "name": "app",
@@ -109,12 +111,14 @@
       "view-column": ViewColumn,
       "acgt-cycles-view-menu": AcgtCyclesViewMenu,
       "half-circle-list": CircleList,
+      "left-view-menu-column": LeftViewMenuColumn,
     },
     "data": () => ({
       "activeViewIndex": 0,
       "activeFileIndex": 0,
       "activeExample": -1,
       "showFileList": false,
+      "showViewList": true,
       //
       "files": [
         {
@@ -142,7 +146,7 @@
       });
     },
     "watch": {
-      "showFileList": function() {
+      "showFileList": function () {
         // React by resizing the element as well.
         this.resizeNotification = {};
       },
@@ -174,23 +178,24 @@
       "activeViewExamples": function () {
         return viewsList[this.activeViewIndex].examples;
       },
-      "viewListColumnWidth": function () {
-        return {
-          "sm": 12,
-          "md": 2,
-        };
-      },
       "viewColumnWidth": function () {
-        if (this.showFileList) {
+        const visible = this.showFileList + this.showViewList;
+        if (visible === 2) {
           return {
             "sm": 12,
             "md": 8,
           };
+        } else if (visible === 1) {
+          return {
+            "sm": 12,
+            "md": 10,
+          };
+        } else {
+          return {
+            "sm": 12,
+            "md": 12,
+          };
         }
-        return {
-          "sm": 12,
-          "md": 10,
-        };
       },
     },
     "methods": {
@@ -228,13 +233,19 @@
           reader.readAsText(file);
         }
       },
-      "onDeleteFile": function(index) {
+      "onDeleteFile": function (index) {
         this.files.splice(index, 1);
         // Check boundaries.
         if (this.activeFileIndex >= this.files.length) {
           this.activeFileIndex = this.files.length - 1;
         }
       },
+      "onToggleFiles": function () {
+        this.showFileList = !this.showFileList;
+      },
+      "onToggleViews": function () {
+        this.showViewList = !this.showViewList;
+      }
     }
   }
 </script>
