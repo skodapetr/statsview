@@ -213,7 +213,7 @@
         const onLoad = (file, reader) => {
           const content = loadBchkFile(reader.result);
           this.files.push({
-            "name": file["name"],
+            "label": file["name"],
             "content": content,
           });
         };
