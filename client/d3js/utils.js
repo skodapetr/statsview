@@ -74,7 +74,7 @@ export function addXLinearScale(svg, range, layout) {
     .attr("transform", "translate(0," + layout.height + ")")
     .call(
       d3.axisBottom(scale)
-      // Hide the first and the last tick.
+        // Hide the first and the last tick.
         .tickSize(0)
         .tickSizeInner(5)
     );
@@ -122,7 +122,7 @@ export function addYLinearScale(svg, range, layout, args = {}) {
   axis
     .call(
       d3.axisLeft(scale)
-      // Hide the first and the last tick.
+        // Hide the first and the last tick.
         .tickSize(0)
         .tickSizeInner(5)
         .tickFormat(format)
@@ -327,7 +327,7 @@ export function focusMouseMoveMultiDataStrategy(
       activeText
         .html(args.focusLabel(dataRecord, valueY, valueX))
         .attr("x", x(valueX) + 15)
-        .attr("y", y(valueY) -5 )
+        .attr("y", y(valueY) - 5)
     }
   }
 
@@ -363,4 +363,23 @@ export function addGrid(svg, x, y, layout) {
     )
     .call(g => g.select(".domain").remove());
 
+}
+
+/**
+ * Does not support multiline text.
+ */
+export function addText(svg, x, y, text) {
+  const textNodes = selectOrCreate(
+    svg, "g.plot-text",
+    () => svg.append("g").attr("class", "plot-text")
+  ).selectAll("text").data(text);
+
+  textNodes.exit().remove();
+
+  textNodes.enter()
+    .append("text")
+    .merge(textNodes)
+    .attr("x", (item) => x(item["x"]))
+    .attr("y", (item) => y(item["y"]))
+    .html((item) => item["value"]);
 }

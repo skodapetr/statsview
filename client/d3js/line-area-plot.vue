@@ -14,7 +14,8 @@
     addXLinearScale,
     addYLinearScale,
     addFocusLine,
-    addGrid
+    addGrid,
+    addText,
   } from "./utils.js";
 
   import "./style.css";
@@ -24,6 +25,7 @@
     "props": {
       "line": {"type": Array, "required": true},
       "area": {"type": Array, "required": true},
+      "text": {"type": Array, "default": () => ([])},
       "resizeNotification": {"type": Object, "required": true},
       "args": {"type": Object, "default": () => ({})},
     },
@@ -96,6 +98,8 @@
           .attr("d", getLinePathFactory(x, y));
 
         addGrid(plot, x, y, layout);
+
+        addText(plot, x, y, this.text);
       },
     }
   }

@@ -20,6 +20,7 @@
     addYLinearScale,
     addFocusLine,
     addGrid,
+    addText,
   } from "./utils.js";
 
   import "./style.css";
@@ -28,6 +29,7 @@
     "name": "d3js-line-plot",
     "props": {
       "data": {"type": Array, "required": true},
+      "text": {"type": Array, "default": () => ([])},
       "resizeNotification": {"type": Object, "required": true},
       "args": {"type": Object, "default": () => ({})},
     },
@@ -82,6 +84,8 @@
         }
 
         addGrid(plot, x, y, layout);
+
+        addText(plot, x, y, this.text);
       }
     }
   }

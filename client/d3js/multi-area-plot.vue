@@ -14,7 +14,8 @@
     addXLinearScale,
     addYLinearScale,
     addFocusLine,
-    focusMouseMoveMultiDataStrategy
+    focusMouseMoveMultiDataStrategy,
+    addText,
   } from "./utils.js";
 
   import "./style.css";
@@ -23,6 +24,7 @@
     "name": "d3-multi-area-plot",
     "props": {
       "data": {"type": Array, "required": true},
+      "text": {"type": Array, "default": () => ([])},
       "resizeNotification": {"type": Object, "required": true},
       "args": {"type": Object, "default": () => ({})},
     },
@@ -99,6 +101,9 @@
           "focusMouseMove": focusMouseMoveMultiDataStrategy,
           "yRange": {"min": yRange[0]},
         });
+
+        // Add text only to the first plot.
+        addText(plots.filter((_, index) => index === 0), x, y, this.text);
       },
     },
   };

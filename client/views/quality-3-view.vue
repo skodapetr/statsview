@@ -14,6 +14,7 @@
       >
         <d3-line-plot
           :data="ffqData"
+          :text="plotText"
           :resize-notification="resizeNotification"
           :args="args"
         />
@@ -76,6 +77,10 @@
           "y": values,
           "x": x
         }));
+      },
+      "plotText": function() {
+        const data = selectData(this.data);
+        return data["text"];
       },
       "args": function() {
         const options = selectData(this.options);

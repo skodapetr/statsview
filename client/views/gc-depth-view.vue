@@ -1,9 +1,11 @@
 <template>
   <div style="height: 100%">
-    <no-data v-if="!dataAvailable"/>
+    <no-data v-if="!dataAvailable" />
     <d3-line-area-plot
+      v-else
       :line="lineData"
       :area="areaData"
+      :text="plotText"
       :resize-notification="resizeNotification"
       :args="args"
     />
@@ -65,6 +67,10 @@
             "x": data["x"],
           }
         ];
+      },
+      "plotText": function() {
+        const data = selectData(this.data);
+        return data["text"];
       },
       "args": function () {
         const options = selectData(this.options);

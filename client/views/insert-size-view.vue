@@ -4,6 +4,7 @@
     <d3-line-plot
       v-else
       :data="plotData"
+      :text="plotText"
       :resize-notification="resizeNotification"
       :args="args"
     />
@@ -65,6 +66,10 @@
             "x": x,
           }
         ];
+      },
+      "plotText": function() {
+        const data = selectData(this.data);
+        return data["text"];
       },
       "args": function() {
         const options = selectData(this.options);

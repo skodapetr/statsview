@@ -4,12 +4,14 @@
     <d3-area-plot
       v-else-if="menuData.graph === 'area'"
       :data="plotData"
+      :text="plotText"
       :resize-notification="resizeNotification"
       :args="args"
     />
     <d3-line-plot
       v-else-if="menuData.graph === 'line'"
       :data="plotData"
+      :text="plotText"
       :args="args"
       :resize-notification="resizeNotification"
     />
@@ -76,6 +78,10 @@
             "x": data["cycle"],
           },
         ];
+      },
+      "plotText": function() {
+        const data = selectData(this.data);
+        return data["text"];
       },
       "args": function () {
         const options = selectData(this.options);

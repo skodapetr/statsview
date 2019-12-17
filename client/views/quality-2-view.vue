@@ -15,6 +15,7 @@
         <d3-line-area-plot
           :line="ffqLineData"
           :area="ffqAreaData"
+          :text="plotText"
           :resize-notification="resizeNotification"
           :args="args"
         />
@@ -118,6 +119,10 @@
             "x": data.bins,
           }
         ];
+      },
+      "plotText": function() {
+        const data = selectData(this.data);
+        return data["text"];
       },
       "args": function () {
         const options = selectData(this.options);
