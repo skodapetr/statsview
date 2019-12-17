@@ -1,6 +1,10 @@
 <template>
   <div>
-    <table class="summary-table">
+    <no-data v-if="!dataAvailable"/>
+    <table
+      v-else
+      class="summary-table"
+    >
       <tr>
         <th>Name</th>
         <th>Value</th>
@@ -21,13 +25,22 @@
 </template>
 
 <script>
+  import NoData from "../ui/no-data";
+
   export default {
     "label": "Summary",
+    //
     "name": "summary-view",
+    "components": {
+      "no-data": NoData,
+    },
     "props": {
       "data": {"type": Object, "required": true}
     },
     "computed": {
+      "dataAvailable": function() {
+        return this.data.summary;
+      },
       "total": function () {
         return this.data.summary["sequences"];
       },
@@ -66,6 +79,7 @@
   .summary-table {
     margin-left: 2rem;
   }
+
   .value-cell {
     text-align: right;
   }

@@ -5,9 +5,16 @@
       :key="index"
       :active="index === value"
       button
+      class="d-flex justify-content-between align-items-center"
       @click="onSelect(index)"
     >
       {{ item.label }}
+      <b-button
+        pill
+        variant="danger"
+        @click.stop="onDelete(index)">
+        <font-awesome-icon icon="trash" />
+      </b-button>
     </b-list-group-item>
   </b-list-group>
 </template>
@@ -23,6 +30,9 @@
       "onSelect": function (index) {
         this.$emit("input", index);
       },
+      "onDelete": function (index) {
+        this.$emit("delete", index);
+      }
     },
   }
 </script>

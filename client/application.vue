@@ -59,6 +59,7 @@
           <file-list
             v-model="activeFileIndex"
             :files="files"
+            @delete="onDeleteFile"
           />
         </b-col>
         <b-col
@@ -161,6 +162,9 @@
         return result;
       },
       "activeViewData": function () {
+        if (this.files.length === 0) {
+          return {}
+        }
         if (this.activeExample === -1) {
           return this.files[this.activeFileIndex].content;
         }
@@ -222,6 +226,13 @@
           const reader = new FileReader();
           reader.onload = () => onLoad(file, reader);
           reader.readAsText(file);
+        }
+      },
+      "onDeleteFile": function(index) {
+        this.files.splice(index, 1);
+        // Check boundaries.
+        if (this.activeFileIndex >= this.files.length) {
+          this.activeFileIndex = this.files.length - 1;
         }
       },
     }
