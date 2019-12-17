@@ -4,25 +4,38 @@
     id="menu"
     @mouseleave="onDeactivate"
   >
-    <input type="checkbox" id="on-check" name="on-check" v-model="visible"/>
-    <label id="activator" for="on-check" @mouseenter="onActivate">
+    <input
+      id="on-check"
+      v-model="visible"
+      type="checkbox"
+      name="on-check"
+    >
+    <label
+      id="activator"
+      for="on-check"
+      @mouseenter="onActivate"
+    >
       <span>
         <div>
-          <font-awesome-icon icon="eye"/>
+          <font-awesome-icon icon="eye" />
         </div>
       </span>
     </label>
-    <div id="menu-items" :style="menuStyle">
+    <div
+      id="menu-items"
+      :style="menuStyle"
+    >
       <div
         v-for="(item, index) in data"
         :key="index"
-        class="negative">
+        class="negative"
+      >
         <!-- By this we allow to show the original graph between items. -->
         <span
           @mouseenter="onSelect(index)"
           @mouseleave="onDeselect(index)"
         >
-          <font-awesome-icon icon="minus"/>
+          <font-awesome-icon icon="minus" />
         </span>
       </div>
     </div>

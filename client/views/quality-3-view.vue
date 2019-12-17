@@ -7,7 +7,7 @@
     <b-row
       v-else
       style="height: 100%"
-     >
+    >
       <b-col
         md="6"
         style="height: 100%"

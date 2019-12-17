@@ -3,7 +3,7 @@
     style="height: 100%"
     fluid
   >
-    <no-data v-if="!dataAvailable"/>
+    <no-data v-if="!dataAvailable" />
     <b-row
       v-else
       style="height: 100%"

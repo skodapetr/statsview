@@ -2,7 +2,7 @@
   <b-navbar-nav class="ml-auto">
     <b-nav-item-dropdown right>
       <template v-slot:button-content>
-        <font-awesome-icon icon="cog"/>
+        <font-awesome-icon icon="cog" />
       </template>
       <b-dropdown-item @click="onAreaGraph">
         Area graph
