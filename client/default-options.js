@@ -5,8 +5,7 @@ export default function createDefaultOptions() {
       "C": "red",
       "G": "brown",
       "T": "blue",
-      "margin": {
-      },
+      "margin": {},
     },
     "indel-cycles": {
       "insertionsFwd": "red",
@@ -44,6 +43,11 @@ export default function createDefaultOptions() {
       "FFQ": {},
       "LFQ": {},
       "margin": {},
-    }
+    },
+    "gc-depth": {
+      "median": "blue",
+      "10-90": "gray",
+      "25-75": "lightblue",
+    },
   };
 }
