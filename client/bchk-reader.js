@@ -92,6 +92,20 @@ export function loadBchkFile(content) {
       "LFQ": raw["FFQ"].map(quality3Fnc)
     };
   }
+
+  // GCD
+  let gcDepth = null;
+  if (raw["GCD"]) {
+    gcDepth  = transposeMatrix(raw["GCD"], [
+      {"index": 1, "name": "x"},
+      {"index": 2, "name": "10"},
+      {"index": 3, "name": "25"},
+      {"index": 4, "name": "50"},
+      {"index": 5, "name": "75"},
+      {"index": 6, "name": "90"},
+    ]);
+  }
+
   return {
     "summary": summary,
     "insert-size": insertSize,
@@ -99,7 +113,8 @@ export function loadBchkFile(content) {
     "acgt-cycles": acgtCycles,
     "quality-2": quality2,
     "quality-3": quality3,
-    "indel-cycles": indelCycles
+    "indel-cycles": indelCycles,
+    "gc-depth": gcDepth,
   };
 }
 
@@ -181,18 +196,4 @@ function meanForQuality(values, sum) {
     average += count * quality;
   });
   return average /= sum;
-}
-
-function transposeSubMatrix(values, offsetX) {
-  const width = values[0].length - offsetX;
-  const output = [];
-  for (let index = 0; index < width; ++index) {
-    output.push([]);
-  }
-  values.forEach((row) => {
-    for (let index = 0; index < width; ++index) {
-      output[index].push(Number(row[index + offsetX]));
-    }
-  });
-  return output;
 }

@@ -46,6 +46,12 @@
       :options="options"
       :resize-notification="resizeNotification"
     />
+    <gc-depth
+      v-else-if="activeView === 7"
+      :data="data"
+      :options="options"
+      :resize-notification="resizeNotification"
+    />
   </b-col>
 </template>
 
@@ -58,6 +64,7 @@
   import InsertSizeView from "./views/insert-size-view";
   import Quality2View from "./views/quality-2-view";
   import Quality3View from "./views/quality-3-view";
+  import GcDepthView from "./views/gc-depth-view";
 
   export default {
     "name": "view-column",
@@ -70,6 +77,7 @@
       "gc-content-view": GcConventView,
       "quality-2-view": Quality2View,
       "quality-3-view": Quality3View,
+      "gc-depth": GcDepthView,
     },
     "props": {
       "activeView": {"type": Number, "required": true},
