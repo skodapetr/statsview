@@ -41,13 +41,13 @@
     </b-navbar>
     <b-container
       fluid
-      style="margin-top: 1rem"
     >
       <b-row>
         <b-col
           v-if="showFileList"
           :sm="6"
           :md="2"
+          :class="{active: activeList === 0}"
           class="scroll-window"
         >
           <file-list
@@ -60,6 +60,7 @@
           v-if="showViewList"
           :sm="6"
           :md="2"
+          :class="{active: activeList === 1}"
           class="scroll-window"
         >
           <view-list
@@ -103,6 +104,9 @@
   import viewsList from "./view-list-definition";
   import LeftViewMenuColumn from "./ui/left-view-menu";
 
+  const FILE_LIST = 0;
+  const VIEW_LIST = 1;
+
   export default {
     "name": "app",
     "components": {
@@ -119,6 +123,7 @@
       "activeExample": -1,
       "showFileList": false,
       "showViewList": true,
+      "activeList": VIEW_LIST,
       //
       "files": [
         {
@@ -141,8 +146,8 @@
       window.addEventListener("resize", () => {
         this.resizeNotification = {};
       });
-      document.addEventListener("keyup", (event) => {
-        this.onPageKeyUp(event)
+      document.addEventListener("keydown", (event) => {
+        this.onKeyEvent(event)
       });
     },
     "watch": {
@@ -199,20 +204,29 @@
       },
     },
     "methods": {
-      "onPageKeyUp": function (event) {
-        if (event.key === "ArrowUp") {
-          this.activeViewIndex = Math.max(0, this.activeViewIndex - 1);
+      "onKeyEvent": function (event) {
+        if (event.key === "Tab") {
+          if (this.activeList === FILE_LIST) {
+            this.activeList = VIEW_LIST;
+          } else {
+            this.activeList = FILE_LIST;
+          }
+          event.preventDefault();
+        } else if (event.key === "ArrowUp") {
+          if (this.activeList === VIEW_LIST) {
+            this.activeViewIndex = Math.max(0, this.activeViewIndex - 1);
+          } else if (this.activeList === FILE_LIST) {
+            this.activeFileIndex = Math.max(0, this.activeFileIndex - 1);
+          }
           event.preventDefault();
         } else if (event.key === "ArrowDown") {
-          this.activeViewIndex = Math.min(
-            viewsList.length - 1, this.activeViewIndex + 1);
-          event.preventDefault();
-        } else if (event.key === "PageUp") {
-          this.activeFileIndex = Math.max(0, this.activeFileIndex - 1);
-          event.preventDefault();
-        } else if (event.key === "PageDown") {
-          this.activeFileIndex = Math.min(
-            this.files.length - 1, this.activeFileIndex + 1);
+          if (this.activeList === VIEW_LIST) {
+            this.activeViewIndex = Math.min(
+              viewsList.length - 1, this.activeViewIndex + 1);
+          } else if (this.activeList === FILE_LIST) {
+            this.activeFileIndex = Math.min(
+              this.files.length - 1, this.activeFileIndex + 1);
+          }
           event.preventDefault();
         }
       },
@@ -262,8 +276,9 @@
   }
 
   .scroll-window {
+    padding-top: 1em;
     overflow-y: scroll;
-    height: calc(100vh - 5em);
+    height: calc(100vh - 4em);
   }
 
   .fixed-window {
@@ -283,6 +298,10 @@
 
   .file-upload-button {
     cursor: pointer;
+  }
+
+  .active {
+    background-color: lightblue;
   }
 
 </style>
