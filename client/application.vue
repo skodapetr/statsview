@@ -256,9 +256,13 @@
       },
       "onToggleFiles": function () {
         this.showFileList = !this.showFileList;
+        // Notify size change.
+        this.resizeNotification = {};
       },
       "onToggleViews": function () {
         this.showViewList = !this.showViewList;
+        // Notify size change.
+        this.resizeNotification = {};
       }
     }
   }
