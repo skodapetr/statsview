@@ -24,7 +24,7 @@
           >
           <label for="files">
             <div class="btn file-upload-button">
-              <font-awesome-icon icon="upload"/>
+              <font-awesome-icon icon="upload" />
             </div>
           </label>
         </b-nav-form>

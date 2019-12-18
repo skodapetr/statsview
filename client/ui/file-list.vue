@@ -12,7 +12,8 @@
       <b-button
         pill
         variant="danger"
-        @click.stop="onDelete(index)">
+        @click.stop="onDelete(index)"
+      >
         <font-awesome-icon icon="trash" />
       </b-button>
     </b-list-group-item>

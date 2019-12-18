@@ -1,6 +1,6 @@
 <template>
   <div>
-    <no-data v-if="!dataAvailable"/>
+    <no-data v-if="!dataAvailable" />
     <table
       v-else
       class="summary-table"
