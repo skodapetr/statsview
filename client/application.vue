@@ -155,6 +155,18 @@
         // React by resizing the element as well.
         this.resizeNotification = {};
       },
+      "activeViewIndex": function() {
+        // Update active to VIEW_LIST as we have last change in it.
+        if (this.activeList !== VIEW_LIST) {
+          this.activeList = VIEW_LIST;
+        }
+      },
+      "activeFileIndex": function() {
+        // Update active to FILE_LIST as we have last change in it.
+        if (this.activeList !== FILE_LIST) {
+          this.activeList = FILE_LIST;
+        }
+      },
     },
     "computed": {
       "views": function () {
