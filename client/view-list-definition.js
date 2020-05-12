@@ -10,6 +10,7 @@ import {getNegativeExamples} from "./negative-data-examples";
 
 const viewsList = [
   {
+    "validator": SummaryView.validator,
     "label": SummaryView.label,
     "value": 0,
     "examples": [],

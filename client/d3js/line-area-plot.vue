@@ -1,14 +1,5 @@
 <template>
-  <div style="height: 100%">
-    <div 
-      class="rotated"
-    >
-      <div class="upside-down">
-        {{yCaption}}
-      </div>
-    </div>
-    <div >{{xCaption}}<div>
-  </div>
+  <div style="height: 100%"/>
 </template>
 
 <script>
@@ -146,22 +137,3 @@
   }
 
 </script>
-
-<style scoped>
-.rotated{
-  position: absolute;
-  -webkit-transform-origin: 0% 100%;
-  -ms-transform-origin: 0% 100%;
-  transform-origin:0% 100%;
-  -webkit-transform: rotate(90deg);
-  -ms-transform: rotate(90deg);
-  transform: rotate(90deg);
-}
-
-.upside-down{
-  text-align: right;
-  -webkit-transform: rotate(180deg);
-  -ms-transform: rotate(180deg);
-  transform: rotate(180deg);
-}
-</style>

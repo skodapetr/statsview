@@ -185,11 +185,10 @@ export function addFocusLine(svg, x, y, layout, data, args = {}) {
     lines.style("opacity", 0);
     focusText.style("opacity", 0)
   }
-
 }
 
 function defaultLabel(data, valueY) {
-  return " -" + data.label + ": " + (Math.round(valueY * 10) / 10);
+  return "  " + data.label + ": " + (Math.round(valueY * 10) / 10);
 }
 
 export function focusMouseMoveStrategy(
@@ -202,7 +201,6 @@ export function focusMouseMoveStrategy(
 
   let focusText = svg.selectAll("text.focus-text").data(data);
   const wasThereTextBefore = !focusText.empty();
-  console.log(focusText);
   focusText.exit().remove();
   focusText = focusText
     .enter()
@@ -227,13 +225,13 @@ export function focusMouseMoveStrategy(
     const textLines = [];
 
     let valueX;
-    for (let index = 0; index < data.length; ++index) {
+    for (let index = 1; index < data.length; ++index) {
       const dataRecord = data[index];
       const valueIndex = roundedIndex(dataRecord.x, mouseX);
       valueX = dataRecord.x[valueIndex];
     }
     textLines.push(valueX + ":");
-    for (let index = 0; index < data.length; ++index) {
+    for (let index = 1; index < data.length; ++index) {
       const dataRecord = data[index];
       const valueIndex = roundedIndex(dataRecord.x, mouseX);
       const valueY = dataRecord.y[valueIndex];
@@ -247,7 +245,7 @@ export function focusMouseMoveStrategy(
     // TODO Allow for multiline text and move left/right from the line.
 
     focusText
-      .html((_, index) => textLines[index+1])
+      .html((_, index) => textLines[index])
       .attr("x", x(valueX) + 15)
       .attr("y", (data, index) => mouse[1] + index * 15)
   }

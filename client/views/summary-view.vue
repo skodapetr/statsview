@@ -28,9 +28,11 @@
 
 <script>
   import NoData from "../ui/no-data";
+  import { STATUS_NONE } from '../data-status';
 
   export default {
-    "label": "Summary",
+    "validator": validateData,
+    "label": "Summary                                                                       ",
     //
     "name": "summary-view",
     "components": {
@@ -72,8 +74,12 @@
         } else {
           return number;
         }
-      }
+      },
     }
+  };
+
+  function validateData(data){
+    return STATUS_NONE;
   }
 </script>
 

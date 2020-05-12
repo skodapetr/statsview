@@ -74,6 +74,7 @@
             class="scroll-window"
           >
             <view-list
+              style="overflow: hidden; resize: none"
               v-model="activeViewIndex"
               :views="views"
             />
@@ -84,32 +85,17 @@
             @toggleFiles="onToggleFiles"
             @toggleViews="onToggleViews"
           />
-          <b-col> <!--  ->
-            <div 
-               :style="{ transform: 'rotate(0.75turn)'}"
-            >
-              Y - caption
-            </div>
-            <b-container>
-              <b-row>
-            <!-->
-                <view-column
-                  :active-view="activeViewIndex"
-                  :data="activeViewData"
-                  :menu-data="menuData"
-                  :options="options"
-                  :resize-notification="resizeNotification"
-                  :width="viewColumnWidth"
-                />
-            <!--
-              </b-row>
-              <b-row>
-                <div style="text-align:center">
-                  X - caption
-                </div>
-              </b-row>
-            </b-container>
-            -->
+          <b-col>
+            <view-column
+              :active-view="activeViewIndex"
+              :data="activeViewData"
+              :menu-data="menuData"
+              :options="options"
+              :resize-notification="resizeNotification"
+              :width="viewColumnWidth"
+              :activeExample="activeExample"
+              v-model="activeExample"
+            />
           </b-col>
         </b-row>
       </b-container>
@@ -231,8 +217,8 @@
             md = 12;
         }
         return {
-          "sm": sm,
-          "md": md+2,
+          "sm": sm+5,
+          "md": md+1,
         };
       },
     },
@@ -314,6 +300,7 @@
 
   .scroll-window {
     padding-top: 1em;
+    overflow-x: hidden;
     overflow-y: scroll;
     height: calc(100vh - 4em);
   }

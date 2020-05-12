@@ -5,7 +5,7 @@
       v-else-if="menuData.graph === 'area'"
       :data="plotData"
       :text="plotText"
-      :heightModifier=4
+      :heightModifier=3.5
       :args="args"
       :resize-notification="resizeNotification"
     />
@@ -27,6 +27,7 @@
 
   import {rangeByStep} from "./views-utils";
   import {STATUS_OK, STATUS_WARNING, STATUS_INVALID} from "../data-status";
+  import { black } from '../colors';
 
   export default {
     "validator": validateData,
@@ -55,6 +56,10 @@
         const data = selectData(this.data);
         const options = selectData(this.options);
         return [
+          {
+            "preText": "Cycles",
+            "preTextColor": black,
+          },
           {
             "label": "A",
             "color": options["A"],
