@@ -29,8 +29,6 @@
       "heightModifier": {"type": Number, "required": true},
       "resizeNotification": {"type": Object, "required": true},
       "args": {"type": Object, "default": () => ({})},
-      "xCaption": {"type": String, "default": () => ("X - caption")},
-      "yCaption": {"type": String, "default": () => ("Y - caption")},
     },
     "data": () => ({
       "svg": null,

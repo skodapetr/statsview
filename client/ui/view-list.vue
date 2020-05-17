@@ -8,6 +8,7 @@
       :variant="selectVariant(item)"
       :active="index === value"
       class="stayOnLine"
+      style="padding-left: 0.35rem"
       button
       @click="onSelect(index)"
     >

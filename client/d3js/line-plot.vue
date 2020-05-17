@@ -37,6 +37,8 @@
       "heightModifier": {"type": Number, "required": true},
       "resizeNotification": {"type": Object, "required": true},
       "args": {"type": Object, "default": () => ({})},
+      "pretext": {"type": String, "default": () => ""},
+      "units": {"type": String, "default": () => ""},
     },
     "data": () => ({
       "svg": null,
@@ -85,7 +87,7 @@
           .attr("d", getLinePathFactory(x, y));
 
         if (args.useFocus) {
-          addFocusLine(plot, x, y, layout, this.data, this.args);
+          addFocusLine(plot, x, y, layout, this.data, this.args, this.pretext, this.units);
         }
 
         addGrid(plot, x, y, layout);

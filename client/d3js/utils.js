@@ -135,7 +135,7 @@ export function addYLinearScale(svg, range, layout, args = {}) {
   return scale;
 }
 
-export function addFocusLine(svg, x, y, layout, data, args = {}) {
+export function addFocusLine(svg, x, y, layout, data, args = {}, pretext, units) {
   args = {
     "focusMouseMove": focusMouseMoveStrategy,
     "focusLabel": defaultLabel,
@@ -163,7 +163,7 @@ export function addFocusLine(svg, x, y, layout, data, args = {}) {
   const lineNodes = lines.nodes().map(d3.select);
 
   const {mousemove, focusText} =
-    args.focusMouseMove(svg, x, y, data, args, lineNodes);
+    args.focusMouseMove(svg, x, y, data, args, lineNodes, pretext, units);
 
   selectOrCreate(
     svg, "rect.focus-rect",
@@ -187,12 +187,12 @@ export function addFocusLine(svg, x, y, layout, data, args = {}) {
   }
 }
 
-function defaultLabel(data, valueY) {
-  return "  " + data.label + ": " + (Math.round(valueY * 10) / 10);
+function defaultLabel(data, valueY, units) {
+  return data.label + ": " + (Math.round(valueY * 10) / 10) + units;
 }
 
 export function focusMouseMoveStrategy(
-  svg, x, y, data, args, focusLines) {
+  svg, x, y, data, args, focusLines, pretext, units) {
 
   assert(focusLines.length === 1,
     "Only one focus node can be provided.");
@@ -210,7 +210,11 @@ export function focusMouseMoveStrategy(
     .attr("text-anchor", "left")
     .attr("alignment-baseline", "middle")
     .merge(focusText)
-    .attr("fill", (item) => item.color);
+    .attr("fill", (item) => item.color)
+
+
+    console.log(focusText);
+
 
   // We go from bottom-up, as
   // we have multiple lines and it is not clear where should we stop.
@@ -230,12 +234,12 @@ export function focusMouseMoveStrategy(
       const valueIndex = roundedIndex(dataRecord.x, mouseX);
       valueX = dataRecord.x[valueIndex];
     }
-    textLines.push(valueX + ":");
+    textLines.push(pretext + " " + valueX + ":");
     for (let index = 1; index < data.length; ++index) {
       const dataRecord = data[index];
       const valueIndex = roundedIndex(dataRecord.x, mouseX);
       const valueY = dataRecord.y[valueIndex];
-      textLines.push(args.focusLabel(dataRecord, valueY));
+      textLines.push(args.focusLabel(dataRecord, valueY, units));
     }
 
     focusNode
@@ -246,8 +250,10 @@ export function focusMouseMoveStrategy(
 
     focusText
       .html((_, index) => textLines[index])
-      .attr("x", x(valueX) + 15)
+      .attr("x", (data, index) => x(valueX) + 15 * (index != 0 ? 2 : 1))
       .attr("y", (data, index) => mouse[1] + index * 15)
+      
+
   }
 
   // If there was text before, we need to update it.
@@ -333,7 +339,7 @@ export function focusMouseMoveMultiDataStrategy(
 
       const activeText = focusTextNodes[index];
       activeText
-        .html(args.focusLabel(dataRecord, valueY))
+        .html(args.focusLabel(dataRecord, valueY, "UNITS"))
         .attr("x", x(valueX) + 15)
         .attr("y", y(valueY) - 5)
     }

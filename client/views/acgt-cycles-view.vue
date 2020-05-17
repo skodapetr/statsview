@@ -8,6 +8,8 @@
       :heightModifier=3.5
       :args="args"
       :resize-notification="resizeNotification"
+      pretext="Cycle"
+      units="%"
     />
     <d3-line-plot
       v-else-if="menuData.graph === 'line'"
@@ -16,6 +18,8 @@
       :heightModifier=2
       :args="args"
       :resize-notification="resizeNotification"
+      pretext="Cycle"
+      units="%"
     />
   </div>
 </template>
@@ -56,10 +60,6 @@
         const data = selectData(this.data);
         const options = selectData(this.options);
         return [
-          {
-            "preText": "Cycles",
-            "preTextColor": black,
-          },
           {
             "label": "A",
             "color": options["A"],

@@ -28,6 +28,8 @@
       "heightModifier": {"type": Number, "required": true},
       "resizeNotification": {"type": Object, "required": true},
       "args": {"type": Object, "default": () => ({})},
+      "pretext": {"type": String, "default": () => ""},
+      "units": {"type": String, "default": () => ""},
     },
     "data": () => ({
       svg: null,
@@ -114,7 +116,8 @@
         addFocusLine(plots, x, y, layout, this.data, {
           "focusMouseMove": focusMouseMoveMultiDataStrategy,
           "yRange": {"min": yRange[0]},
-        });
+        }
+        , this.pretext, this.units);
 
         // Add text only to the first plot.
         addText(plots.filter((_, index) => index === 0), x, y, this.text);
