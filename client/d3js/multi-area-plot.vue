@@ -25,9 +25,15 @@
     "props": {
       "data": {"type": Array, "required": true},
       "text": {"type": Array, "default": () => ([])},
+      "heightModifier": {"type": Number, "required": true},
       "resizeNotification": {"type": Object, "required": true},
       "args": {"type": Object, "default": () => ({})},
+      "pretext": {"type": String, "default": () => ""},
+      "units": {"type": String, "default": () => ""},
     },
+    "data": () => ({
+      svg: null,
+    }),
     "mounted": function () {
       this.svg = d3Select(this.$el);
       this.onPlot();
@@ -41,11 +47,20 @@
       }
     },
     "methods": {
+      "getElemHeight": function (element)
+      {
+          element.style.visibility = "hidden";
+          document.body.appendChild(element);
+          var height = element.offsetHeight + 0;
+          document.body.removeChild(element);
+          element.style.visibility = "visible";
+          return height;
+      },
       "getScreenSize": function () {
         const element = this.$el.parentElement;
         return {
           "width": element.offsetWidth,
-          "height": element.offsetHeight
+          "height": element.offsetHeight,
         };
       },
       "onPlot": function () {
@@ -53,9 +68,10 @@
         const xRange = range(this.data, (item) => item["x"], args.xRange);
         const yRange = range(this.data, (item) => item["y"], args.yRange);
         const margin = computeMargin(yRange, args["margin"]);
-        const layout = computeLayout(margin, this.getScreenSize(), {
+        const layout = computeLayout(margin, this.getScreenSize(), this.heightModifier,{
           "yLevels": this.data.length
         });
+        console.log(layout.height);
 
         // TODO: Merge bellow block into a single code.
         // Create elements.
@@ -100,7 +116,8 @@
         addFocusLine(plots, x, y, layout, this.data, {
           "focusMouseMove": focusMouseMoveMultiDataStrategy,
           "yRange": {"min": yRange[0]},
-        });
+        }
+        , this.pretext, this.units);
 
         // Add text only to the first plot.
         addText(plots.filter((_, index) => index === 0), x, y, this.text);

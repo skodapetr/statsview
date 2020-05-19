@@ -34,7 +34,7 @@
 
 <style scoped>
   /* Make it of zero size to not break Bootstrap grid, but visible on top
-     so a user can interact with ti. */
+     so a user can interact with it. */
   .menu-container {
     width: 0;
     overflow-x: visible;

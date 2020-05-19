@@ -5,15 +5,21 @@
       v-else-if="menuData.graph === 'area'"
       :data="plotData"
       :text="plotText"
-      :resize-notification="resizeNotification"
+      :heightModifier=3.5
       :args="args"
+      :resize-notification="resizeNotification"
+      pretext="Cycle"
+      units="%"
     />
     <d3-line-plot
       v-else-if="menuData.graph === 'line'"
       :data="plotData"
       :text="plotText"
+      :heightModifier=2
       :args="args"
       :resize-notification="resizeNotification"
+      pretext="Cycle"
+      units="%"
     />
   </div>
 </template>
@@ -25,12 +31,13 @@
 
   import {rangeByStep} from "./views-utils";
   import {STATUS_OK, STATUS_WARNING, STATUS_INVALID} from "../data-status";
+  import { black } from '../colors';
 
   export default {
     "validator": validateData,
     "label": "ACGT cycles",
     "menuData": {
-      "graph": "area"
+      "graph": "line"
     },
     //
     "name": "acgt-cycles",
@@ -101,7 +108,31 @@
   }
 
   function validateData(data) {
-    return STATUS_OK;
+    let result = STATUS_OK;
+    
+    /**/
+    data = selectData(data);
+    let okTreshold = 5;
+    let badTreshold = 10;
+    for (let index = 0; index < data["count"]; ++index) {
+      let A = data["A"][index];
+      let C = data["C"][index];
+      let G = data["G"][index];
+      let T = data["T"][index];
+      let mi = Math.min(A,C,G,T);
+      let ma = Math.max(A,C,G,T);
+      if((result == STATUS_OK || result == STATUS_WARNING ) && mi + okTreshold >= ma){
+        continue;
+      }
+      else if (mi + badTreshold >= ma){
+        result = STATUS_WARNING;
+      }
+      else{
+        return STATUS_INVALID;
+      }
+    }
+    /**/
+    return result;
   }
 
 </script>

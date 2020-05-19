@@ -16,6 +16,7 @@
           :line="ffqLineData"
           :area="ffqAreaData"
           :text="plotText"
+          :heightModifier=3
           :resize-notification="resizeNotification"
           :args="args"
         />
@@ -27,6 +28,7 @@
         <d3-line-area-plot
           :line="lfqLineData"
           :area="lfqAreaData"
+          :heightModifier=3
           :resize-notification="resizeNotification"
           :args="args"
         />

@@ -11,6 +11,10 @@
   } from "d3";
 
   import {
+    defaultColors,
+  } from "../colors.js";
+
+  import {
     range,
     computeMargin,
     computeLayout,
@@ -30,11 +34,14 @@
     "props": {
       "data": {"type": Array, "required": true},
       "text": {"type": Array, "default": () => ([])},
+      "heightModifier": {"type": Number, "required": true},
       "resizeNotification": {"type": Object, "required": true},
       "args": {"type": Object, "default": () => ({})},
+      "pretext": {"type": String, "default": () => ""},
+      "units": {"type": String, "default": () => ""},
     },
     "data": () => ({
-      "svg": null
+      "svg": null,
     }),
     "mounted": function () {
       this.svg = createGraphSvg(d3Select(this.$el));
@@ -61,12 +68,12 @@
         const xRange = range(this.data, (item) => item["x"], args.xRange);
         const yRange = range(this.data, (item) => item["y"], args.yRange);
         const margin = computeMargin(yRange, args["margin"]);
-        const layout = computeLayout(margin, this.getScreenSize());
+        const layout = computeLayout(margin, this.getScreenSize(), this.heightModifier);
 
         const plot = configureGraphSvg(this.svg, layout, margin);
         const x = addXLinearScale(plot, xRange, layout);
         const y = addYLinearScale(plot, yRange, layout, args["yScale"]);
-        const colors = d3ScaleOrdinal(d3SchemeAccent);
+        const colors = d3ScaleOrdinal(defaultColors);
 
         const lines = plot.selectAll("path.plot-line").data(this.data);
         lines.exit().remove();
@@ -80,7 +87,7 @@
           .attr("d", getLinePathFactory(x, y));
 
         if (args.useFocus) {
-          addFocusLine(plot, x, y, layout, this.data, this.args);
+          addFocusLine(plot, x, y, layout, this.data, this.args, this.pretext, this.units);
         }
 
         addGrid(plot, x, y, layout);

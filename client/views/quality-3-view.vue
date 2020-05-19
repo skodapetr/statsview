@@ -15,6 +15,7 @@
         <d3-line-plot
           :data="ffqData"
           :text="plotText"
+          :heightModifier=2
           :resize-notification="resizeNotification"
           :args="args"
         />
@@ -25,10 +26,12 @@
       >
         <d3-line-plot
           :data="lfqData"
+          :text="plotText"
+          :heightModifier=2
           :resize-notification="resizeNotification"
           :args="args"
         />
-      </b-col>
+      </b-col> 
     </b-row>
   </b-container>
 </template>

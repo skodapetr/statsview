@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 100%" />
+  <div style="height: 100%"/>
 </template>
 
 <script>
@@ -26,11 +26,12 @@
       "line": {"type": Array, "required": true},
       "area": {"type": Array, "required": true},
       "text": {"type": Array, "default": () => ([])},
+      "heightModifier": {"type": Number, "required": true},
       "resizeNotification": {"type": Object, "required": true},
       "args": {"type": Object, "default": () => ({})},
     },
     "data": () => ({
-      "svg": null
+      "svg": null,
     }),
     "mounted": function () {
       this.svg = createGraphSvg(d3Select(this.$el));
@@ -66,7 +67,7 @@
           return [...item["y-low"], ...item["y-high"]]
         }, args.yRange);
         const margin = computeMargin(yRange, args["margin"]);
-        const layout = computeLayout(margin, this.getScreenSize());
+        const layout = computeLayout(margin, this.getScreenSize(), this.heightModifier);
 
         const plot = configureGraphSvg(this.svg, layout, margin);
         const x = addXLinearScale(plot, xRange, layout);

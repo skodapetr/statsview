@@ -21,7 +21,12 @@ import {
   faUpload,
   faAngleRight,
   faAngleLeft,
-  faTrash
+  faTrash,
+
+  faTimes,
+  faTimesCircle,
+  faCheckCircle,
+  faQuestionCircle
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
@@ -29,7 +34,9 @@ import "./data.js";
 
 // Add icons we need.
 library.add([
-  faPlus, faMinus, faEye, faCog, faUpload, faAngleRight, faAngleLeft, faTrash
+  faPlus, faMinus, faEye, faCog, faUpload, faAngleRight, faAngleLeft, faTrash,
+
+  faTimes, faTimesCircle, faCheckCircle, faQuestionCircle
 ]);
 
 Vue.config.productionTip = false;

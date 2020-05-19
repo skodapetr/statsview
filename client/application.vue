@@ -1,109 +1,118 @@
 <template>
-  <div>
-    <b-navbar
-      toggleable="lg"
-      type="dark"
-      variant="info"
-      class="navbar"
-    >
-      <b-navbar-brand href="#">
-        RMME Viewer
-      </b-navbar-brand>
-      <b-collapse
-        id="nav-collapse"
-        is-nav
-      >
-        <b-nav-form>
-          <input
-            id="files"
-            type="file"
-            name="files"
-            class="file-upload"
-            multiple
-            @change="onUploadFiles"
-          >
-          <label for="files">
-            <div class="btn file-upload-button">
-              <font-awesome-icon icon="upload" />
-            </div>
-          </label>
-        </b-nav-form>
-        <b-navbar-nav>
-          <span style="margin-right: 1rem; margin-left: 1rem">
-            <b>Active file:</b> {{ files[activeFileIndex]["label"] }}
-          </span>
-        </b-navbar-nav>
-        <acgt-cycles-view-menu
-          v-if="activeViewIndex === 1"
-          :data="menuData[1]"
-        />
-      </b-collapse>
-    </b-navbar>
+  <div class="bg-light">
     <b-container
-      fluid
+      class="p-0 bg-white"
+      fluid="sm" 
     >
-      <b-row>
-        <b-col
-          v-if="showFileList"
-          :sm="6"
-          :md="2"
-          :class="{active: activeList === 0}"
-          class="scroll-window"
+      <b-navbar
+        toggleable="lg"
+        type="light"
+        variant="info"
+        class="navbar"
+      >
+        <b-navbar-brand href="#">
+          RMME Viewer
+        </b-navbar-brand>
+        <b-collapse
+          id="nav-collapse"
+          is-nav
         >
-          <file-list
-            v-model="activeFileIndex"
-            :files="files"
-            @delete="onDeleteFile"
+          <b-nav-form>
+            <input
+              id="files"
+              type="file"
+              name="files"
+              class="file-upload"
+              multiple
+              @change="onUploadFiles"
+            >
+            <label for="files">
+              <div class="btn file-upload-button">
+                <font-awesome-icon icon="upload" />
+              </div>
+            </label>
+          </b-nav-form>
+          <b-navbar-nav>
+            <span style="margin-right: 1rem; margin-left: 1rem">
+              <b>Active file:</b> {{ files[activeFileIndex]["label"] }}
+            </span>
+          </b-navbar-nav>
+          <b-navbar-nav class="ml-auto">
+            <example-text-list 
+              v-model="activeExample"
+              :data="activeViewExamples"
+            />
+            <acgt-cycles-view-menu
+              v-if="activeViewIndex === 1"
+              :data="menuData[1]"
+            />
+          </b-navbar-nav>
+        </b-collapse>
+      </b-navbar>
+      <b-container
+        fluid
+      >
+        <b-row>
+          <b-col
+            v-if="showFileList"
+            :sm="6"
+            :md="2"
+            :class="{active: activeList === 0}"
+            class="scroll-window"
+          >
+            <file-list
+              v-model="activeFileIndex"
+              :files="files"
+              @delete="onDeleteFile"
+            />
+          </b-col>
+          <b-col
+            v-if="showViewList"
+            :sm="6"
+            :md="2"
+            :class="{active: activeList === 1}"
+            class="scroll-window"
+          >
+            <view-list
+              style="overflow: hidden; resize: none"
+              v-model="activeViewIndex"
+              :views="views"
+            />
+          </b-col>
+          <left-view-menu-column
+            :files="showFileList"
+            :views="showViewList"
+            @toggleFiles="onToggleFiles"
+            @toggleViews="onToggleViews"
           />
-        </b-col>
-        <b-col
-          v-if="showViewList"
-          :sm="6"
-          :md="2"
-          :class="{active: activeList === 1}"
-          class="scroll-window"
-        >
-          <view-list
-            v-model="activeViewIndex"
-            :views="views"
-          />
-        </b-col>
-        <left-view-menu-column
-          :files="showFileList"
-          :views="showViewList"
-          @toggleFiles="onToggleFiles"
-          @toggleViews="onToggleViews"
-        />
-        <view-column
-          :active-view="activeViewIndex"
-          :data="activeViewData"
-          :menu-data="menuData"
-          :options="options"
-          :resize-notification="resizeNotification"
-          :width="viewColumnWidth"
-        />
-      </b-row>
+          <b-col>
+            <view-column
+              :active-view="activeViewIndex"
+              :data="activeViewData"
+              :menu-data="menuData"
+              :options="options"
+              :resize-notification="resizeNotification"
+              :width="viewColumnWidth"
+              :activeExample="activeExample"
+              v-model="activeExample"
+            />
+          </b-col>
+        </b-row>
+      </b-container>
     </b-container>
-    <div class="circle-menu">
-      <half-circle-list
-        v-model="activeExample"
-        :data="activeViewExamples"
-      />
-    </div>
   </div>
 </template>
 
 <script>
   import {loadBchkFile} from "./bchk-reader";
-  import CircleList from "./ui/half-circle-list";
+  import ExamplesList from "./ui/example-text-list";
   import ViewList from "./ui/view-list";
-  import createDefaultOptions from "./default-options";
+  import createInitialOptions from "./default-options";
   import FileList from "./ui/file-list";
   import ViewColumn from "./view-column";
   import AcgtCyclesViewMenu from "./views/acgt-cycles-view-menu";
   import viewsList from "./view-list-definition";
   import LeftViewMenuColumn from "./ui/left-view-menu";
-
   const FILE_LIST = 0;
   const VIEW_LIST = 1;
 
@@ -114,7 +123,7 @@
       "file-list": FileList,
       "view-column": ViewColumn,
       "acgt-cycles-view-menu": AcgtCyclesViewMenu,
-      "half-circle-list": CircleList,
+      "example-text-list": ExamplesList,
       "left-view-menu-column": LeftViewMenuColumn,
     },
     "data": () => ({
@@ -134,7 +143,7 @@
           "content": loadBchkFile(window.rmme_data_2)
         }
       ],
-      "options": createDefaultOptions(),
+      "options": createInitialOptions(),
       "resizeNotification": {},
       // Used to share view data between view and view-menu.
       "menuData": {
@@ -175,8 +184,9 @@
           const newItem = {
             ...item
           };
+          let data = this.files[this.activeFileIndex].content;
           if (item.validator) {
-            newItem.status = item.validator(this.data);
+            newItem.status = item.validator(data);
           }
           result.push(newItem);
         });
@@ -197,22 +207,19 @@
       },
       "viewColumnWidth": function () {
         const visible = this.showFileList + this.showViewList;
+        let sm = 12;
+        let md;
         if (visible === 2) {
-          return {
-            "sm": 12,
-            "md": 8,
-          };
+            md = 8;
         } else if (visible === 1) {
-          return {
-            "sm": 12,
-            "md": 10,
-          };
+            md = 10;
         } else {
-          return {
-            "sm": 12,
-            "md": 12,
-          };
+            md = 12;
         }
+        return {
+          "sm": sm+5,
+          "md": md+1,
+        };
       },
     },
     "methods": {
@@ -293,6 +300,7 @@
 
   .scroll-window {
     padding-top: 1em;
+    overflow-x: hidden;
     overflow-y: scroll;
     height: calc(100vh - 4em);
   }

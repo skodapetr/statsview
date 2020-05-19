@@ -1,3 +1,5 @@
+import { min, max } from "d3";
+
 export function loadBchkFile(content) {
   const raw = {};
   const summary = {};
