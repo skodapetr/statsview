@@ -125,6 +125,7 @@
           return this.defaultCaption("X");
         }
       },
+      //inner function - it will not exist in the final 
       "defaultCaption": function (char){
         switch(this.activeView){
           case 0:
