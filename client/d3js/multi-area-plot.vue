@@ -71,7 +71,6 @@
         const layout = computeLayout(margin, this.getScreenSize(), this.heightModifier,{
           "yLevels": this.data.length
         });
-        console.log(layout.height);
 
         // TODO: Merge bellow block into a single code.
         // Create elements.

@@ -107,24 +107,23 @@
     return data["acgt-cycles"];
   }
 
+  let okTreshold = 5;
+  let badTreshold = 10;
+
   function validateData(data) {
     let result = STATUS_OK;
     
     /**/
     data = selectData(data);
-    let okTreshold = 5;
-    let badTreshold = 10;
     for (let index = 0; index < data["count"]; ++index) {
-      let A = data["A"][index];
-      let C = data["C"][index];
-      let G = data["G"][index];
-      let T = data["T"][index];
-      let mi = Math.min(A,C,G,T);
-      let ma = Math.max(A,C,G,T);
-      if((result == STATUS_OK || result == STATUS_WARNING ) && mi + okTreshold >= ma){
+      let CG = Math.abs(data["C"][index] - data["G"][index]);
+      let AT = Math.abs(data["A"][index] - data["T"][index]);
+      let mi = Math.min(CG,AT);
+      let ma = Math.max(CG,AT);
+      if(okTreshold >= ma){
         continue;
       }
-      else if (mi + badTreshold >= ma){
+      else if (badTreshold >= ma){
         result = STATUS_WARNING;
       }
       else{

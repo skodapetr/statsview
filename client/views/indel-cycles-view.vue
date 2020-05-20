@@ -88,8 +88,68 @@
     return data["indel-cycles"];
   }
 
+  let okTreshold = 20;
+  let badTreshold = 40;
+
+  let jump = 2;
   function validateData(data) {
-    return STATUS_OK;
+    let result = STATUS_OK;
+    
+    data = selectData(data);
+    for (let index = jump; index < data["count"] - jump; ++index) {
+      let curr = validateSpecificIndex(index, data);
+      if(curr == STATUS_INVALID){
+        return STATUS_INVALID;
+      }
+      else if (curr >= STATUS_WARNING){
+        result = STATUS_WARNING;
+      }
+    }
+    return result;
   }
 
+  function validateSpecificIndex(index, data){
+    let insertionsFwd = validateIndexOnString(data,"insertionsFwd",index);
+    let insertionsRev = validateIndexOnString(data,"insertionsRev",index);
+    let deletionsFwd = validateIndexOnString(data,"deletionsFwd",index);
+    let deletionsRev = validateIndexOnString(data,"deletionsRev",index);
+    return Math.max(insertionsFwd,insertionsRev,deletionsFwd,deletionsRev);
+  }
+  
+  function validateIndexOnString(data, string, index){
+    let currVal = data[string][index];
+
+    let prevIndex = Math.max(index - jump, 0);
+    let previous = data[string][prevIndex];
+    let upcomIndex = Math.min(index + jump, data["count"] - 1);
+    let upcoming = data[string][upcomIndex];
+    /*/
+    let range = Math.abs(upcoming - previous);
+    let average = (previous + upcoming) / 2;
+    let diff = Math.abs(currVal - average);
+
+    if(diff < range * okTreshold){
+      return STATUS_OK
+    }else if (diff < range * badTreshold){
+      return STATUS_WARNING;
+    }else{
+      console.log(string + " on " + index + " (diff=" + diff + ", average=" + average + ")");
+      return STATUS_INVALID;
+    }
+    /*/
+    let min = Math.min(...data[string].slice(prevIndex, currVal - 1), ...data[string].slice(currVal + 1, upcomIndex));
+    let max = Math.max(previous, upcoming);
+
+    if(currVal > min * (1 - (okTreshold*2/100)) && currVal < max * (1 + (okTreshold/100))){
+      return STATUS_OK;
+    }
+    else if (currVal > min * (1 - (badTreshold*2/100)) && currVal < max * (1 + (badTreshold/100))){
+      return STATUS_WARNING;
+    }else{
+      console.log("indel-cycles :- " + index + ": " + currVal + " /€/ (" + min * (1 - (badTreshold*2/100)) + ", "
+       + max * (1 + (badTreshold/100)) + ")");
+      return STATUS_INVALID;
+    }
+    /**/
+  }
 </script>

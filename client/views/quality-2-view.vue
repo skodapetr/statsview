@@ -143,8 +143,24 @@
     return data["quality-2"];
   }
 
+  let okTreshold = 8;
+  let badTreshold = 15;
   function validateData(data) {
-    return STATUS_OK;
+    
+    data = selectData(data);
+    let min = Math.min(...data["FFQ"].mean, ...data["FFQ"].median,
+                       ...data["LFQ"].mean, ...data["LFQ"].median); 
+    let max = Math.max(...data["FFQ"].mean, ...data["FFQ"].median,
+                       ...data["LFQ"].mean, ...data["LFQ"].median); 
+
+    let diff = max - min;
+    if(diff < okTreshold){
+      return STATUS_OK;
+    }else if (diff < badTreshold){
+      return STATUS_WARNING;
+    }else{
+      return STATUS_INVALID;
+    }
   }
 
 </script>

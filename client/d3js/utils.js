@@ -210,10 +210,7 @@ export function focusMouseMoveStrategy(
     .attr("text-anchor", "left")
     .attr("alignment-baseline", "middle")
     .merge(focusText)
-    .attr("fill", (item) => item.color)
-
-
-    console.log(focusText);
+    .attr("fill", (item) => item.color);
 
 
   // We go from bottom-up, as
@@ -234,8 +231,8 @@ export function focusMouseMoveStrategy(
       const valueIndex = roundedIndex(dataRecord.x, mouseX);
       valueX = dataRecord.x[valueIndex];
     }
-    textLines.push(pretext + " " + valueX + ":");
-    for (let index = 1; index < data.length; ++index) {
+    //textLines.push(pretext + " " + valueX + ":");
+    for (let index = 0; index < data.length; ++index) {
       const dataRecord = data[index];
       const valueIndex = roundedIndex(dataRecord.x, mouseX);
       const valueY = dataRecord.y[valueIndex];

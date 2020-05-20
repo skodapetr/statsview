@@ -71,8 +71,75 @@
     return data["gc-content"];
   }
 
+  let okTreshold = 15;
+  let badTreshold = 30;
+
   function validateData(data) {
-    return STATUS_OK;
+    let result = STATUS_OK;
+    
+    data = selectData(data);
+    for (let index = 1; index < data["count"] - 1; ++index) {
+      let curr = validateSpecificIndex(index, data);
+      if(curr >= STATUS_INVALID){
+        return STATUS_INVALID;
+      }
+      else if (curr >= STATUS_WARNING){
+        result = STATUS_WARNING;
+      }
+    }
+    return result;
+  }
+
+  function validateSpecificIndex(index, data){
+    let gcf = validateIndexOnString(data,"gcf-y","gcf-x",index);
+    let gcl = validateIndexOnString(data,"gcl-y","gcl-x",index);
+    return Math.max(gcf, gcl);
+  }
+  
+  function validateIndexOnString(data, stringY, stringX, index){
+    /**/
+    let currVal = data[stringY][index];
+    let currX = data[stringX][index];
+
+    let prevIndex = Math.max(index - 1, 0);
+    let previousY = data[stringY][prevIndex];
+    let previousX = data[stringX][prevIndex];
+    let upcomIndex = Math.min(index + 1, data[stringX].length - 1);
+    let upcomingY = data[stringY][upcomIndex];
+    let upcomingX = data[stringX][upcomIndex];
+
+    let distance = upcomingX - previousX; 
+    let average = (previousY * (upcomingX - currX) + upcomingY * (currX-previousX))/distance;
+    let min = Math.min(previousY, upcomingY);
+    let max = Math.max(previousY, upcomingY);
+
+    if((currVal > min && currVal < max) || isTresholdOk(okTreshold, currVal, average)){
+      return STATUS_OK;
+    }
+    else if (isTresholdOk(badTreshold, currVal, average)){
+      /*/
+      console.log(currX + ": " + currVal + " /€/ (" + average * (1 - (badTreshold/100)) + ", "
+       + average * (1 + (badTreshold/100)) + ") - average = " + average + " (all rounded by myRound)");
+      console.log(average + " = (" + previousY + " * " + " (" + upcomingX + " - " + currX + ") + "
+       + upcomingY + " * (" + currX + " - " + previousX + ")) / (" + upcomingX + " - " + previousX + ")");
+      /**/
+      return STATUS_WARNING;
+    }else{
+      return STATUS_INVALID;
+    }
+    /**/
+      return STATUS_OK;
+    /**/ 
+  }
+
+  function isTresholdOk(treshold, currVal, average){
+    currVal = myRound(currVal);
+    return currVal >= myRound(average * (1 - (treshold/100)))
+     && currVal <= myRound(average * (1 + (treshold/100)));
+  }
+
+  function myRound(num){
+    return Math.round(num*1000)/1000;
   }
 
 </script>
