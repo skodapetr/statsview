@@ -16,11 +16,12 @@
   import LinePlot from "../d3js/line-plot";
   import NoData from "../ui/no-data";
 
-  import {rangeByStep} from "./views-utils";
+  import {rangeByStep, unifiedRound} from "./views-utils";
   import {STATUS_OK, STATUS_WARNING, STATUS_INVALID} from "../data-status";
 
   export default {
     "validator": validateData,
+    "thresholds": defaultTresholds,
     "label": "GC content",
     //
     "name": "gc-content",
@@ -39,8 +40,9 @@
       },
       "plotData": function () {
         const data = selectData(this.data);
+        let ref = selectRef(this.data);
         const options = selectData(this.options);
-        return [
+        let result =  [
           {
             "label": "First fragment",
             "color": options["gcf"],
@@ -53,6 +55,20 @@
             "x": data["gcl-x"]
           }
         ];
+        if(ref){
+          if(!ref["mapped"]){
+            let ratio = data["gcl-x"][data["gcl-x"].length - 1] / ref["ref-x"][ref["ref-x"].length - 1];
+            ref["ref-x"] = ref["ref-x"].map(value => value * ratio);
+            ref["mapped"] = true;
+          }
+          result.push({
+            "label": "Reference",
+            "color": options["ref"],
+            "y": ref["ref-y"],
+            "x": ref["ref-x"],
+          });
+        }
+        return result;
       },
       "plotText": function() {
         const data = selectData(this.data);
@@ -71,19 +87,30 @@
     return data["gc-content"];
   }
 
+  function selectRef(data) {
+    return data["gc-content-ref"];
+  }
+
+  function defaultTresholds(){
+    return {
+      "Bad": badTreshold,
+      "Ok": okTreshold,
+      "legend": "maximal % difference of actual value and average of surounding ones"
+    }
+  }
   let okTreshold = 15;
   let badTreshold = 30;
 
-  function validateData(data) {
+  function validateData(data, thresholds) {
     let result = STATUS_OK;
     
     data = selectData(data);
     for (let index = 1; index < data["count"] - 1; ++index) {
       let curr = validateSpecificIndex(index, data);
-      if(curr >= STATUS_INVALID){
+      if(curr === STATUS_INVALID){
         return STATUS_INVALID;
       }
-      else if (curr >= STATUS_WARNING){
+      else if (curr === STATUS_WARNING){
         result = STATUS_WARNING;
       }
     }
@@ -97,7 +124,6 @@
   }
   
   function validateIndexOnString(data, stringY, stringX, index){
-    /**/
     let currVal = data[stringY][index];
     let currX = data[stringX][index];
 
@@ -119,7 +145,7 @@
     else if (isTresholdOk(badTreshold, currVal, average)){
       /*/
       console.log(currX + ": " + currVal + " /€/ (" + average * (1 - (badTreshold/100)) + ", "
-       + average * (1 + (badTreshold/100)) + ") - average = " + average + " (all rounded by myRound)");
+       + average * (1 + (badTreshold/100)) + ") - average = " + average + " (all rounded by unifiedRound)");
       console.log(average + " = (" + previousY + " * " + " (" + upcomingX + " - " + currX + ") + "
        + upcomingY + " * (" + currX + " - " + previousX + ")) / (" + upcomingX + " - " + previousX + ")");
       /**/
@@ -127,19 +153,12 @@
     }else{
       return STATUS_INVALID;
     }
-    /**/
       return STATUS_OK;
-    /**/ 
   }
 
   function isTresholdOk(treshold, currVal, average){
-    currVal = myRound(currVal);
-    return currVal >= myRound(average * (1 - (treshold/100)))
-     && currVal <= myRound(average * (1 + (treshold/100)));
+    currVal = unifiedRound(currVal);
+    return currVal >= unifiedRound(average * (1 - (treshold/100)))
+     && currVal <= unifiedRound(average * (1 + (treshold/100)));
   }
-
-  function myRound(num){
-    return Math.round(num*1000)/1000;
-  }
-
 </script>

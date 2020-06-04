@@ -22,6 +22,7 @@
 
   export default {
     "validator": validateData,
+    "thresholds": defaultTresholds,
     "label": "GC depth",
     //
     "name": "gc-depth",
@@ -82,11 +83,18 @@
     }
   };
 
+  function defaultTresholds(){
+    return {
+      "Bad": 0,
+      "Ok": 0,
+      "legend": "",
+    }
+  }
   function selectData(data) {
     return data["gc-depth"];
   }
 
-  function validateData(data) {
+  function validateData(data, thresholds) {
     return STATUS_OK;
   }
 

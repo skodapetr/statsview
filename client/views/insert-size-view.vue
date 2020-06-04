@@ -16,11 +16,12 @@
   import LinePlot from "../d3js/line-plot";
   import NoData from "../ui/no-data";
 
-  import {rangeByStep} from "./views-utils";
+  import {rangeByStep, unifiedRound, smoothenArray} from "./views-utils";
   import {STATUS_OK, STATUS_WARNING, STATUS_INVALID} from "../data-status";
 
   export default {
     "validator": validateData,
+    "thresholds": defaultTresholds,
     "label": "Insert size",
     //
     "name": "insert-size",
@@ -88,8 +89,110 @@
     return data["insert-size"];
   }
 
-  function validateData(data) {
-    return STATUS_OK;
+  function defaultTresholds(){
+    return {
+      "Bad": 60,
+      "Ok": 80,
+      "legend": "minimal % of reads in " + (peakCountedPart * 100) + "% of the main peak",
+    }
   }
+
+  let peakCountedPart = 0.5;
+
+  //algorithm finds local minimums to both sides from global maximum, ignore lets it ignore some small local minimums
+  let ignore = 1.05;
+
+  function validateData(data, thresholds) {
+    data = selectData(data);
+    let usedString = "inwardOrientedPairs";
+    let usedArray = smoothenArray(data[usedString]);
+    let maxIndex = indexOfMax(usedArray);
+    let wholeArea = areaUnderLineInRange(data, 0, data["insertSize"].length - 1);
+    let areaValue = areaAroundMaxValue(data, maxIndex, thresholds);
+    let areaPeak = areaUnderMainPeak(data, maxIndex, usedArray);
+    let peakPercents = areaPeak/wholeArea;
+    let valuePercents = areaValue/wholeArea;
+    let percents = Math.min(peakPercents, valuePercents);
+    if(percents >= thresholds["Ok"]/100){
+      return STATUS_OK;
+    }else if (percents >= thresholds["Bad"]/100){
+      return STATUS_WARNING;
+    }
+    else{
+      return STATUS_INVALID;
+    }
+  }
+
+  function areaUnderMainPeak(data, maxIndex, usedArray){
+    let prevLocMinIndex = 0;
+    let nextLocMinIndex = usedArray.length - 1;
+    for(let i = maxIndex - 1; i >= 0; i--){     //looking for local minimum before max
+      let curr = unifiedRound(usedArray[i]);
+      let prev = unifiedRound(usedArray[i + 1] * ignore);
+      if( curr >= prev){
+        prevLocMinIndex = i;
+        break;
+      }
+    }
+    for(let i = maxIndex + 1; i < usedArray.length - 1; i++){   //looking for local minimum after max
+      let curr = unifiedRound(usedArray[i]);
+      let prev = unifiedRound(usedArray[i - 1] * ignore);
+      if(curr >= prev){
+        nextLocMinIndex = i;
+        break;
+      }
+    }
+    return areaUnderMainPeak = areaUnderLineInRange(data,
+       Math.round(maxIndex - peakCountedPart*(maxIndex - prevLocMinIndex)),
+       Math.round(maxIndex + peakCountedPart*(nextLocMinIndex - maxIndex)));
+  }
+
+  function areaAroundMaxValue(data, maxIndex, thresholds){
+    let string = "insertSize";
+    let max = data[string][maxIndex];
+    let smaller = max * (1 - peakCountedPart/2);
+    let bigger = max * (1 + peakCountedPart/2);
+    let smallerIndex = -1;
+    let biggerIndex = -1;
+    for(let i = 0; i < data[string].length; i++){ // TODO: find the indexes by binary search
+      if(smallerIndex < 0){
+        if(data[string][i] > smaller){
+          smallerIndex = i;
+        }
+      }
+      if(data[string][i] > bigger){
+          biggerIndex = i;
+          break;
+      }
+    }
+    return areaUnderLineInRange(data, smallerIndex, biggerIndex);
+  }
+
+  //end is inclusive
+  function areaUnderLineInRange(data, start, end){
+    let result = 0;
+    for(let i = start; i < end - 1; i++){
+      let min = Math.min(data["inwardOrientedPairs"][i], data["inwardOrientedPairs"][i + 1]);
+      result += min*(data["insertSize"][i + 1] - data["insertSize"][i]);
+      result += Math.abs(data["inwardOrientedPairs"][i] - data["inwardOrientedPairs"][i + 1]) / 2;
+    }
+    return result;
+  }
+
+  //finds index of the maximum in an array
+  function indexOfMax(arr) {
+    if (arr.length === 0) {
+        return -1;
+    }
+    var max = arr[0];
+    var maxIndex = 0;
+    for (var i = 1; i < arr.length; i++) {
+        if (arr[i] > max) {
+            maxIndex = i;
+            max = arr[i];
+        }
+    }
+    return maxIndex;
+}
 
 </script>

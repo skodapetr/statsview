@@ -2,8 +2,7 @@
   <b-col
     :sm="width.sm"
     :md="width.md"
-    :class="'fixed-window' + borderClass()"
-    style="padding-left: 2.2rem; padding-top: 1.1rem; margin-top: 0.8rem; margin-left: 2.2rem;"
+    :class="'fixed-window view-column' + borderClass()"
   >
     <font-awesome-icon
       v-show="showExample()"
@@ -67,6 +66,12 @@
         :options="options"
         :resize-notification="resizeNotification"
       />
+      <thresholds
+        v-else-if="activeView === 8"
+        :resize-notification="resizeNotification"
+        :thresholdsVals="thresholdsValues"
+        v-model="thresholdsValues"
+      />
     </b-col>
     <div class="text-center">{{xCaption()}}<div>
     <div v-show="showExample()" style="margin-top: 1rem;">
@@ -79,12 +84,14 @@
   import SummaryView from "./views/summary-view";
   import AcgtCyclesView from "./views/acgt-cycles-view";
   import AcgtCyclesViewMenu from "./views/acgt-cycles-view-menu";
-  import GcConventView from "./views/gc-content-view";
+  import GcContentView from "./views/gc-content-view";
   import IndelCycleView from "./views/indel-cycles-view";
   import InsertSizeView from "./views/insert-size-view";
   import Quality2View from "./views/quality-2-view";
   import Quality3View from "./views/quality-3-view";
   import GcDepthView from "./views/gc-depth-view";
+  import ThresholdsView from "./views/threshold-view";
+import gcContentViewVue from './views/gc-content-view.vue';
 
   export default {
     "name": "view-column",
@@ -94,10 +101,11 @@
       "acgt-cycles-view-menu": AcgtCyclesViewMenu,
       "indel-cycle-view": IndelCycleView,
       "insert-size-view": InsertSizeView,
-      "gc-content-view": GcConventView,
+      "gc-content-view": GcContentView,
       "quality-2-view": Quality2View,
       "quality-3-view": Quality3View,
       "gc-depth": GcDepthView,
+      "thresholds": ThresholdsView,
     },
     "props": {
       "activeView": {"type": Number, "required": true},
@@ -107,6 +115,7 @@
       "options": {"type": Object, "required": true},
       "resizeNotification": {"type": Object, "required": true},
       "width": {"type": Object, "required": true},
+      "thresholdsValues": {"type": Object, "required": true},
     },
     "methods": {
       "xCaption": function () {
@@ -144,11 +153,13 @@
             return "quality3 " + char + " caption";
           case 7:
             return "GC-depth " + char + " caption";
+          case 8:
+            return "";
         }
         return "Graph index is " + this.activeView + ". Something went wrong!";
       },
       "showExample": function (){
-        return this.activeExample > -1;
+        return this.activeExample != -1;
       },
       "borderClass": function(){
         if(this.showExample()){
@@ -158,13 +169,25 @@
         }
       },
       "resetExamples": function (){
-        this.$emit("input", -1)
-      }
+        this.$emit("reset-example");
+      },
+      "applyThresholds": function(){
+        this.$emit("change-thresholds", this.thresholdsValues);
+      },
     }
   }
 </script>
 
 <style scoped>
+
+.view-column{
+  padding-left: 2.2rem;
+  padding-top: 1.1rem;
+  margin-top: 0.8rem;
+  margin-left: 2.2rem;
+  overflow: hidden;
+}
+
 .rotated{
   position: absolute;
   padding: 0%;

@@ -46,6 +46,7 @@
 
   export default {
     "validator": validateData,
+    "thresholds": defaultTresholds,
     "label": "Quality II",
     //
     "name": "quality-2",
@@ -143,9 +144,16 @@
     return data["quality-2"];
   }
 
+  function defaultTresholds(){
+    return {
+      "Bad": badTreshold,
+      "Ok": okTreshold,
+      "legend": "maximal difference between maximum and minimum in the graph",
+    }
+  }
   let okTreshold = 8;
   let badTreshold = 15;
-  function validateData(data) {
+  function validateData(data, thresholds) {
     
     data = selectData(data);
     let min = Math.min(...data["FFQ"].mean, ...data["FFQ"].median,

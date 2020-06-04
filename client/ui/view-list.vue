@@ -5,7 +5,7 @@
     <b-list-group-item
       v-for="(item, index) in views"
       :key="index"
-      :variant="selectVariant(item)"
+      :variant="variant(item)"
       :active="index === value"
       class="stayOnLine"
       style="padding-left: 0.35rem"
@@ -25,7 +25,13 @@
 </template>
 
 <script>
-  import {STATUS_OK, STATUS_WARNING, STATUS_INVALID, STATUS_NONE} from "./../data-status";
+  import {STATUS_OK,
+   STATUS_WARNING,
+   STATUS_INVALID,
+   STATUS_NONE,
+   selectIcon,
+   selectColor,
+   selectVariant} from "./../data-status";
 
   export default {
     "name": "view-list",
@@ -37,51 +43,18 @@
       "onSelect": function (index) {
         this.$emit("input", index);
       },
-      "selectVariant": function(item) {
-        switch(item.status) {
-          case STATUS_WARNING:
-            return "warning";
-          case STATUS_INVALID:
-            return "danger";
-          case STATUS_OK:
-          default:
-            return "info";
-        }
+      "variant": function (item){
+        return selectVariant(item.status);
       },
-      "icon": function(item){
-        switch(item.status) {
-          case STATUS_WARNING:
-            return "question-circle";
-          case STATUS_INVALID:
-            return "times-circle";
-          case STATUS_NONE:
-            return "";
-          case STATUS_OK:
-          default:
-            return "check-circle";
-        }
+      "icon": function (item){
+        return selectIcon(item.status);
       },
-      "color": function(item){
-        let result;
-        switch(item.status) {
-          case STATUS_WARNING:
-            result = "Yellow";
-            break;
-          case STATUS_INVALID:
-            result = "Red";
-            break;
-          case STATUS_NONE:
-            result = "White";
-            break;
-          case STATUS_OK:
-          default:
-            result = "LimeGreen";
-            break;
-        }
-        return result;
-      }
+      "color": function (item){
+        return selectColor(item.status);
+      },
     },
-  }
+  } 
+
 </script>
 
 <style scoped>

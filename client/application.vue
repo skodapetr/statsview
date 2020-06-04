@@ -94,7 +94,9 @@
               :resize-notification="resizeNotification"
               :width="viewColumnWidth"
               :activeExample="activeExample"
-              v-model="activeExample"
+              :thresholdsValues="thresholds"
+              v-on:reset-example="activeExample = -1"
+              v-on:change-thresholds="thresholds = $event.target.value"
             />
           </b-col>
         </b-row>
@@ -113,6 +115,7 @@
   import AcgtCyclesViewMenu from "./views/acgt-cycles-view-menu";
   import viewsList from "./view-list-definition";
   import LeftViewMenuColumn from "./ui/left-view-menu";
+  import { STATUS_OK, worstStatus, STATUS_INVALID, STATUS_NONE } from './data-status';
   const FILE_LIST = 0;
   const VIEW_LIST = 1;
 
@@ -133,14 +136,17 @@
       "showFileList": false,
       "showViewList": true,
       "activeList": VIEW_LIST,
+      "thresholds": null,
       //
       "files": [
         {
           "label": "default 1",
-          "content": loadBchkFile(window.rmme_data)
+          "content": loadBchkFile(window.rmme_data),
+          "status": STATUS_NONE,
         }, {
           "label": "default 2",
-          "content": loadBchkFile(window.rmme_data_2)
+          "content": loadBchkFile(window.rmme_data_2),
+          "status": STATUS_NONE,
         }
       ],
       "options": createInitialOptions(),
@@ -158,6 +164,11 @@
       document.addEventListener("keydown", (event) => {
         this.onKeyEvent(event)
       });
+      this.resetThresholds();
+      this.files[0]["status"] = this.fileStatus(0);
+      this.files[1].status = this.fileStatus(1);
+
+      
     },
     "watch": {
       "showFileList": function () {
@@ -180,16 +191,18 @@
     "computed": {
       "views": function () {
         const result = [];
-        viewsList.forEach((item) => {
+        for(let i = 0; i < viewsList.length; i++) {
+          let item = viewsList[i];
           const newItem = {
             ...item
           };
           let data = this.files[this.activeFileIndex].content;
-          if (item.validator) {
-            newItem.status = item.validator(data);
+          if (item.validator && this.thresholds) {
+            let threshold = this.thresholds.find(elem => elem.name == item.label);
+            newItem.status = item.validator(data, threshold.thresholds);
           }
           result.push(newItem);
-        });
+        };
         return result;
       },
       "activeViewData": function () {
@@ -249,15 +262,54 @@
           event.preventDefault();
         }
       },
+      "resetThresholds": function(){ //sets thresholds back to default thresholds
+        this.thresholds = [];
+        viewsList.forEach((item) => {
+          let thresholds = item.thresholds();
+          let name = item.label;
+          const newItem = {
+            name,
+            thresholds
+          };
+          this.thresholds.push(newItem);
+        });
+      },
+      "fileStatus": function(fileIndex){
+        return this.dataStatus(this.files[fileIndex].content);
+      },
+      "dataStatus": function(data){ 
+        let result = STATUS_OK;
+        for(let i = 0; i < viewsList.length; i++) {
+          let item = viewsList[i];
+          if (item.validator && this.thresholds) {
+            let threshold = this.thresholds.find(elem => elem.name == item.label);
+            let currStatus = item.validator(data, threshold.thresholds);
+            result = worstStatus([currStatus, result]);
+            if(result == STATUS_INVALID){
+              break;
+            }
+          }
+        };
+        return result;
+      },
       "onUploadFiles": function (event) {
         event.preventDefault();
         const files = event.target.files;
+        let futureIndex = this.files.length;
         const onLoad = (file, reader) => {
           const content = loadBchkFile(reader.result);
-          this.files.push({
-            "label": file["name"],
-            "content": content,
-          });
+          if(content["file"]){ // if uploaded file has specified, that it belongs to already existent file
+            let f = this.files.find((val) => val.label == content["file"]);
+            if(f && content["name"] && content["val"]){
+              f["content"][content["name"]] = content["val"];
+            }
+          }else{
+            this.files.push({
+              "label": file["name"],
+              "content": content,
+              "status": this.dataStatus(content),
+            });
+          }
         };
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
@@ -265,6 +317,8 @@
           reader.onload = () => onLoad(file, reader);
           reader.readAsText(file);
         }
+        this.activeFileIndex = futureIndex;
+        this.activeViewIndex = this.activeViewIndex;
       },
       "onDeleteFile": function (index) {
         this.files.splice(index, 1);

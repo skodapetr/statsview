@@ -16,11 +16,12 @@
   import LinePlot from "../d3js/line-plot";
   import NoData from "../ui/no-data";
 
-  import {rangeByStep} from "./views-utils";
-  import {STATUS_OK, STATUS_WARNING, STATUS_INVALID} from "../data-status";
+  import {rangeByStep, smoothenArray} from "./views-utils";
+  import {STATUS_OK, STATUS_WARNING, STATUS_INVALID, worstStatus} from "../data-status";
 
   export default {
     "validator": validateData,
+    "thresholds": defaultTresholds,
     "label": "Indels per cycle",
     //
     "name": "indel-cycle",
@@ -88,16 +89,24 @@
     return data["indel-cycles"];
   }
 
+  function defaultTresholds(){
+    return {
+      "Bad": badTreshold,
+      "Ok": okTreshold,
+      "legend": "maximal % peak in comparison to average of surrounding values"
+    }
+  }
   let okTreshold = 20;
   let badTreshold = 40;
 
   let jump = 2;
-  function validateData(data) {
+  function validateData(data, thresholds) {
     let result = STATUS_OK;
     
     data = selectData(data);
+    data = smoothenData(data);
     for (let index = jump; index < data["count"] - jump; ++index) {
-      let curr = validateSpecificIndex(index, data);
+      let curr = validateSpecificIndex(index, data, thresholds);
       if(curr == STATUS_INVALID){
         return STATUS_INVALID;
       }
@@ -108,15 +117,15 @@
     return result;
   }
 
-  function validateSpecificIndex(index, data){
-    let insertionsFwd = validateIndexOnString(data,"insertionsFwd",index);
-    let insertionsRev = validateIndexOnString(data,"insertionsRev",index);
-    let deletionsFwd = validateIndexOnString(data,"deletionsFwd",index);
-    let deletionsRev = validateIndexOnString(data,"deletionsRev",index);
-    return Math.max(insertionsFwd,insertionsRev,deletionsFwd,deletionsRev);
+  function validateSpecificIndex(index, data, thresholds){
+    let insertionsFwd = validateIndexOnString(data,"insertionsFwd",index, thresholds);
+    let insertionsRev = validateIndexOnString(data,"insertionsRev",index, thresholds);
+    let deletionsFwd = validateIndexOnString(data,"deletionsFwd",index, thresholds);
+    let deletionsRev = validateIndexOnString(data,"deletionsRev",index, thresholds);
+    return worstStatus([insertionsFwd,insertionsRev,deletionsFwd,deletionsRev]);
   }
   
-  function validateIndexOnString(data, string, index){
+  function validateIndexOnString(data, string, index, thresholds){
     let currVal = data[string][index];
 
     let prevIndex = Math.max(index - jump, 0);
@@ -140,16 +149,31 @@
     let min = Math.min(...data[string].slice(prevIndex, currVal - 1), ...data[string].slice(currVal + 1, upcomIndex));
     let max = Math.max(previous, upcoming);
 
-    if(currVal > min * (1 - (okTreshold*2/100)) && currVal < max * (1 + (okTreshold/100))){
+    if(currVal > min * (1 - (thresholds["Ok"] * 2/100)) && currVal < max * (1 + (thresholds["Ok"]/100))){
       return STATUS_OK;
     }
-    else if (currVal > min * (1 - (badTreshold*2/100)) && currVal < max * (1 + (badTreshold/100))){
+    else if (currVal > min * (1 - (thresholds["Bad"]*2/100)) && currVal < max * (1 + (thresholds["Bad"]/100))){
       return STATUS_WARNING;
     }else{
-      console.log("indel-cycles :- " + index + ": " + currVal + " /€/ (" + min * (1 - (badTreshold*2/100)) + ", "
-       + max * (1 + (badTreshold/100)) + ")");
+      console.log(previous + " " + upcoming);
+      console.log("indel-cycles :- " + index + ": " + currVal + " /€/ (" + min * (1 - (thresholds["Bad"]*2/100)) + ", "
+       + max * (1 + (thresholds["Bad"]/100)) + ")");
       return STATUS_INVALID;
     }
     /**/
+  }
+
+  function smoothenData(data){
+    let inf = smoothenArray(data["insertionsFwd"]);
+    let inr = smoothenArray(data["insertionsRev"]);
+    let def = smoothenArray(data["deletionsFwd"]);
+    let der = smoothenArray(data["deletionsRev"]);
+    return {
+      "insertionsFwd": inf,
+      "insertionsRev": inr,
+      "deletionsFwd": def,
+      "deletionsRev": der,
+      "count": data["count"],
+    }
   }
 </script>

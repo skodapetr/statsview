@@ -28,11 +28,12 @@
 
 <script>
   import NoData from "../ui/no-data";
-  import { STATUS_NONE } from '../data-status';
+  import { STATUS_OK, STATUS_WARNING } from '../data-status';
 
   export default {
     "validator": validateData,
-    "label": "Summary                                                                       ",
+    "thresholds": defaultThresholds,
+    "label": "Summary",
     //
     "name": "summary-view",
     "components": {
@@ -78,8 +79,24 @@
     }
   };
 
-  function validateData(data){
-    return STATUS_NONE;
+  function defaultThresholds(){
+    return {
+      "Bad": "-",
+      "Ok": "-",
+      "legend": ""
+    }
+  }
+
+  //ok if mapped > 90%, only 02% error ratio, mapped and paired > 80%
+  function validateData(data, thresholds){
+    if(data.summary["reads mapped"]/data.summary["sequences"] < 0.9 ||
+     data.summary["reads QC failed"]/data.summary["sequences"] > 0.0002 ||
+     data.summary["reads duplicated"]/data.summary["sequences"] > 0.05 ||
+     data.summary["reads mapped and paired"]/data.summary["sequences"] < 0.8){
+      return STATUS_WARNING;
+    }else{
+      return STATUS_OK;
+    }
   }
 </script>
 

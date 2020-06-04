@@ -45,6 +45,7 @@
 
   export default {
     "validator": validateData,
+    "thresholds": defaultTresholds,
     "label": "Quality III",
     //
     "name": "quality-3",
@@ -102,7 +103,14 @@
     return data["quality-3"];
   }
 
-  function validateData(data) {
+  function defaultTresholds(){
+    return {
+      "Bad": 0,
+      "Ok": 0,
+      "legend": "",
+    }
+  }
+  function validateData(data, thresholds) {
     return STATUS_OK;
   }
 

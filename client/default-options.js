@@ -22,6 +22,7 @@ function createIntialOptions() {
       "margin": {},
     },
     "gc-content": {
+      "ref": "green",
       "gcf": "green",
       "gcl": "red",
       "margin": {},
@@ -93,6 +94,8 @@ export default function createInitialOptions() {
     "gc-content": {
       "gcf": green,
       "gcl": darkPurple,
+      "gcr": yelow,
+      "ref": gray,
       "margin": {},
     },
     "quality-2": {

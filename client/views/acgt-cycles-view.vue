@@ -35,6 +35,7 @@
 
   export default {
     "validator": validateData,
+    "thresholds": defaultTresholds,
     "label": "ACGT cycles",
     "menuData": {
       "graph": "line"
@@ -107,31 +108,32 @@
     return data["acgt-cycles"];
   }
 
-  let okTreshold = 5;
-  let badTreshold = 10;
+  function defaultTresholds(){
+    return {
+      "Bad": 10,
+      "Ok": 5,
+      "legend": "maximal difference between A and T, respective C and G",
+    }
+  }
 
-  function validateData(data) {
+  function validateData(data, thresholds) {
     let result = STATUS_OK;
-    
-    /**/
+
     data = selectData(data);
     for (let index = 0; index < data["count"]; ++index) {
       let CG = Math.abs(data["C"][index] - data["G"][index]);
       let AT = Math.abs(data["A"][index] - data["T"][index]);
-      let mi = Math.min(CG,AT);
       let ma = Math.max(CG,AT);
-      if(okTreshold >= ma){
+      if(thresholds["Ok"] >= ma){
         continue;
       }
-      else if (badTreshold >= ma){
+      else if (thresholds["Bad"] >= ma){
         result = STATUS_WARNING;
       }
       else{
         return STATUS_INVALID;
       }
     }
-    /**/
     return result;
   }
-
 </script>

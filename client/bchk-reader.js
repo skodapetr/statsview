@@ -1,6 +1,47 @@
-import { min, max } from "d3";
+import { min, max, schemePurples } from "d3";
 
 export function loadBchkFile(content) {
+  let line;
+  nextLine(content, 0, (li) => {
+    line = li;
+  });
+  if(line == "gc-cont-ref"){
+    return loadGCcontRef(content);
+  }else{
+    return loadWholeData(content);
+  }
+}
+
+function loadGCcontRef(content){
+  let x = [];
+  let vals = [];
+  let file;
+  enumerateLines(content, (line) => {
+    if(line != "gc-cont-ref"){
+      if(line.startsWith("°")){
+        file = line.substr(1, line.length -1);
+        return;
+      }else if(line.startsWith("#")){
+        return;
+      }else{
+        let both = line.split("\t");
+        x.push(both[0])
+        vals.push(both[1]);
+      }
+    }
+  });
+  return {
+    "val":{
+      "ref-x": x,
+      "ref-y": vals,
+      "count": x.length,
+    },
+    "file": file,
+    "name": "gc-content-ref",
+  };
+}
+
+function loadWholeData(content){
   const raw = {};
   const summary = {};
 
@@ -44,8 +85,17 @@ export function loadBchkFile(content) {
       ...transposeMatrix(raw["GCL"], [
         {"index": 0, "name": "gcl-x"},
         {"index": 1, "name": "gcl-y"},
-      ])
+      ]),
     };
+    if(raw["GCR"]){
+      gcContent = {
+        ...gcContent,
+        ...transposeMatrix(raw["GCR"], [
+          {"index": 0, "name": "gcr-x"},
+          {"index": 1, "name": "gcr-y"},
+        ])
+      };
+    }
     gcContent["gcf-y"] = normalize(gcContent["gcf-y"]);
     gcContent["gcl-y"] = normalize(gcContent["gcl-y"]);
   }
@@ -106,6 +156,7 @@ export function loadBchkFile(content) {
       {"index": 5, "name": "75"},
       {"index": 6, "name": "90"},
     ]);
+    gcDepth = supressArr(gcDepth, "x", ["x", "10", "25", "50", "75", "90"]);
   }
 
   return {
@@ -121,16 +172,26 @@ export function loadBchkFile(content) {
 }
 
 function enumerateLines(content, callback) {
+  let index = 0;
+  while(index < content.length){
+    index = nextLine(content, index, callback)
+  }
+}
+
+function nextLine(content, startIndex, callback){
   let line = "";
-  for (let index = 0; index < content.length; ++index) {
-    if (content[index] === "\n") {
-      callback(line);
-      line = "";
+  for (let i = startIndex; i < content.length; i++){
+    if (content[i] === "\n" || content[i] === "\r") {
+      if (line != ""){
+        callback(line);
+      }
+      return i + 1;
     } else {
-      line += content[index];
+      line += content[i];
     }
   }
   callback(line);
+  return content.length;
 }
 
 function transposeMatrix(values, namedRows) {
@@ -199,3 +260,130 @@ function meanForQuality(values, sum) {
   });
   return average /= sum;
 }
+
+function supressArr(arr, ref, innerArrays){
+  let result = {};
+  let first = 0;
+  while(arr[ref][first] < 1){
+    first++;
+  }
+  let last = arr[ref].length - 1;
+  while(arr[ref][last] > 99){
+    last--;
+  }
+  for(let i = 0; i < innerArrays.length; i++){
+    result[innerArrays[i]] = arr[innerArrays[i]].slice(first, last);
+  }
+  return result;
+}
+
+export function loadThresholds(content){
+  let processing = false;
+  nextLine(content, 0, (line) => {
+    if(line == "autoQC-thresholds"){
+      processing = true;
+    }
+  });
+  if(processing){
+    let result = {};
+    let file = undefined;
+    enumerateLines(content, (line) => {
+      if(line != "autoQC-thresholds"){
+        if(line.startsWith("°")){
+          file = line.substr(1, line.length -1);
+          return;
+        }else if(line.startsWith("#")){
+          return;
+        }else{
+          let values = line.split("\t");
+          result[values[0]] = {
+            "Ok": values[1],
+            "Bad": values[2],
+            "legend": values[3],
+          };
+        }
+      }
+    });
+    console.log(result);
+    return {
+      "thresholds": result,
+      "file": file,
+    };
+  }
+}
+
+export function saveThresholds(thresholds) {
+  console.log("saving thresholds...");
+  let data = thresholdsString(thresholds);
+  let date = new Date();
+  let sep = "_";
+  let dateInFile = date.getFullYear() + sep + (date.getMonth() + 1) + sep + date.getDate() + sep + date.getHours() + sep + date.getMinutes();
+  let filename = "rmme-viewer-autoQC-" + dateInFile + ".txt";
+  var file = new Blob([data], {type: "text/strings"});
+  if (window.navigator.msSaveOrOpenBlob) // IE10+
+      window.navigator.msSaveOrOpenBlob(file, filename);
+  else { // Others
+      var a = document.createElement("a"),
+              url = URL.createObjectURL(file);
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);  
+      }, 0); 
+  }
+}
+
+function thresholdsString(thresholds){
+  let result = "autoQC-thresholds\n";
+  for(let i = 0; i < thresholds.length; i++){
+    let name = thresholds[i]["name"];
+    let ok = thresholds[i]["thresholds"]["Ok"];
+    let bad = thresholds[i]["thresholds"]["Bad"];
+    let legend = thresholds[i]["thresholds"]["legend"] ? thresholds[i]["thresholds"]["legend"] : ""
+    result += name + "\t" + ok + "\t" + bad + "\t" + legend + "\n";
+  }
+  return result;
+}
+
+/*
+export function loadBchkFileExtremeSuression(content, supression=3) {
+  let loaded = loadBchkFile(content);
+  loaded["acgt-cycles"] = supressWholeArray(loaded["acgt-cycles"], 
+    ["A","C","G","T","cycle"], supression);
+  loaded["insert-size"] = supressWholeArray(loaded["insert-size"], 
+    ["insertSize","pairsTotal","inwardOrientedPairs","outwardOrientedPairs","otherPairs"], supression);
+  loaded["gc-content"] = supressWholeArray(loaded["gc-content"], 
+    ["gcf-x","gcl-x","gcf-y","gcl-y"], supression);
+  loaded["quality-2"]["FFQ"] = supressWholeArray(loaded["quality-2"]["FFQ"], 
+    ["bins","mean","median","percentile-25","percentile-75"], supression);
+  loaded["quality-2"]["LFQ"] = supressWholeArray(loaded["quality-2"]["LFQ"], 
+    ["bins","mean","median","percentile-25","percentile-75"], supression);
+  loaded["quality-3"] = supressWholeArray(loaded["quality-3"], 
+    ["FFQ","LFQ"], supression);
+  loaded["indel-cycles"] = supressWholeArray(loaded["indel-cycles"], 
+    ["deletionsFwd","deletionsRev","insertionsFwd","insertionsRev"], supression);
+  loaded["gc-depth"] = supressWholeArray(loaded["gc-depth"], 
+    ["10","25","50","75","90","x"], supression);
+  return loaded;
+}
+
+function supressWholeArray(array, innerArrays, supression){
+  let result = {};
+  for(let i = 0; i < innerArrays.length; i++){
+    result[innerArrays[i]] = arrayWithSupression(array, innerArrays[i], supression);
+  }
+  if (array["count"]){
+    result["count"] = result[innerArrays[0]].length;
+  }
+  return result;
+}
+
+function arrayWithSupression(array, dim, supression){
+  let lowerB = Math.round(array[dim].length * supression/100 + 0.5);
+  let higherB = Math.round(array[dim].length*(1-supression/100) - 0.5);
+  return array[dim].slice(lowerB, higherB);
+}
+*/
