@@ -242,7 +242,7 @@ export function focusMouseMoveStrategy(
     const dataRecord = data[data.length - 1];
     const valueIndex = roundedIndex(dataRecord.x, mouseX);
     valueX = dataRecord.x[valueIndex];
-    textLines.push(pretext + " " + valueX + ":");
+    textLines.push(pretext + " " + Math.round(valueX) + ":");
     for (let index = 0; index < data.length; ++index) {
       const dataRecord = data[index];
       const valueIndex = roundedIndex(dataRecord.x, mouseX);

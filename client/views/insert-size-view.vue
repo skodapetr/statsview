@@ -98,7 +98,8 @@
     return {
       "Bad": 60,
       "Ok": 80,
-      "legend": "minimal % of reads in " + (peakCountedPart * 100) + "% of the main peak",
+      "legend": "minimal % of reads in " + (peakCountedPart * 100) + "% of the main peak and in ±" 
+      + peakCountedPart * 100 / 2 + "% of main value",
     }
   }
 

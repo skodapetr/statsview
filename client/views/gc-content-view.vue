@@ -98,13 +98,11 @@
   
   function defaultTresholds(){
     return {
-      "Bad": badTreshold,
-      "Ok": okTreshold,
+      "Bad": 30,
+      "Ok": 15,
       "legend": "maximal % difference of actual value and average of surounding ones"
     }
   }
-  let okTreshold = 15;
-  let badTreshold = 30;
 
   function validateData(data, thresholds, forceCompute=false) {
     data = selectData(data);
@@ -115,16 +113,16 @@
       let message = "";
 
       for (let index = 1; index < data["count"] - 1; ++index) {
-        let curr = validateSpecificIndex(index, data);
+        let curr = validateSpecificIndex(index, data, thresholds);
         if(curr["status"] === STATUS_INVALID){
           if(status != STATUS_INVALID){
             message = "";
           }
-          message += curr["message"] + " on " + index + ", ";
+          message += curr["message"];
           status = STATUS_INVALID;
         }
         else if (curr["status"] === STATUS_WARNING && status != STATUS_INVALID){
-          message += curr["message"] + " on " + index + ", ";
+          message += curr["message"];
           status = STATUS_WARNING;
         }
       }
@@ -140,19 +138,17 @@
     }
   }
 
-  function validateSpecificIndex(index, data){
-    let gcf = validateIndexOnString(data,"gcf-y","gcf-x",index);
-    let gcl = validateIndexOnString(data,"gcl-y","gcl-x",index);
+  function validateSpecificIndex(index, data, thresholds){
+    let gcf = validateIndexOnString(data, "gcf-y", "gcf-x", index, thresholds);
+    let gcl = validateIndexOnString(data, "gcl-y", "gcl-x", index, thresholds);
     let worst = worstStatus([gcf, gcl]);
     let message = "";
     if(worst != STATUS_OK){
-      if(gcl === gcf){
-        message = "both"
-      }else if(gcl === worst){
-        message = "last";
+      if(gcl === worst){
+        message = "last on " + Math.round(data["gcl-x"][index]) + ", ";
       }
       else{
-        message = "first";
+        message = "first on " + Math.round(data["gcf-x"][index]) + ", ";
       }
     }
     return {
@@ -161,7 +157,7 @@
     };
   }
   
-  function validateIndexOnString(data, stringY, stringX, index){
+  function validateIndexOnString(data, stringY, stringX, index, thresholds){
     let currVal = data[stringY][index];
     let currX = data[stringX][index];
 
@@ -177,14 +173,17 @@
     let min = Math.min(previousY, upcomingY);
     let max = Math.max(previousY, upcomingY);
 
-    if((currVal > min && currVal < max) || isTresholdOk(okTreshold, currVal, average)){
+    if((currVal > min && currVal < max) || isTresholdOk(thresholds["Ok"], currVal, average)){
       return STATUS_OK;
     }
-    else if (isTresholdOk(badTreshold, currVal, average)){
+    else if (isTresholdOk(thresholds["Bad"], currVal, average)){
       /*/
       //uncomment to activate console output
-      console.log(currX + ": " + currVal + " /€/ (" + average * (1 - (badTreshold/100)) + ", "
-       + average * (1 + (badTreshold/100)) + ") - average = " + average + " (all rounded by unifiedRound)");
+      
+      console.log("gc-content warning_status reasons:")
+      console.log()
+      console.log(currX + ": " + currVal + " not in (" + average * (1 - (thresholds["Bad"]/100)) + ", "
+       + average * (1 + (thresholds["Bad"]/100)) + ") - average = " + average + " (all rounded by unifiedRound)");
       console.log(average + " = (" + previousY + " * " + " (" + upcomingX + " - " + currX + ") + "
        + upcomingY + " * (" + currX + " - " + previousX + ")) / (" + upcomingX + " - " + previousX + ")");
       /**/
@@ -192,7 +191,6 @@
     }else{
       return STATUS_INVALID;
     }
-    return STATUS_OK;
   }
 
   function isTresholdOk(treshold, currVal, average){

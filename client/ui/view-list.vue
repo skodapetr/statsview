@@ -41,7 +41,7 @@
     },
     "methods": {
       "onSelect": function (index) {
-        this.$emit("input", index);
+        this.$emit("change-view-index", index);
       },
       "variant": function (item){
         if(item.status){

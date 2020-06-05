@@ -151,13 +151,11 @@
   
   function defaultTresholds(){
     return {
-      "Bad": badTreshold,
-      "Ok": okTreshold,
+      "Bad": 8,
+      "Ok": 15,
       "legend": "maximal difference between maximum and minimum in the graph",
     }
   }
-  let okTreshold = 8;
-  let badTreshold = 15;
   function validateData(data, thresholds, forceCompute=false) {
     data = selectData(data);
     if(data["status"] && !forceCompute){
@@ -165,20 +163,22 @@
     }else{
       let min = Math.min(...data["FFQ"].mean, ...data["FFQ"].median,
                         ...data["LFQ"].mean, ...data["LFQ"].median); 
+      min = unifiedRound(min);
       let max = Math.max(...data["FFQ"].mean, ...data["FFQ"].median,
                         ...data["LFQ"].mean, ...data["LFQ"].median); 
+      max = unifiedRound(max);
 
       let diff = max - min;
       diff = unifiedRound(diff);
 
       let status;
       let message;
-      if(diff < okTreshold){
+      if(diff < thresholds["Ok"]){
         message = "";
         status = STATUS_OK;
       }else{
         let state;
-        if (diff < badTreshold){
+        if (diff < thresholds["Bad"]){
           state = "suspecious";
           status = STATUS_WARNING;
         }else{

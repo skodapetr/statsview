@@ -45,13 +45,15 @@
             />
           </span>
         </th>
-        <th class="value-cell">Meaning</th>
       </tr>
       <tr
         v-for="(value, name) in thresholdsVals"
         :key="name"
       >
-        <td style="white-space: nowrap;">
+        <td 
+          @mouseenter="hoveredOver = name"
+          style="white-space: nowrap;"
+        >
           {{ value.name }}
         </td>
         <td class="value-cell">
@@ -66,17 +68,11 @@
             v-model.number="value.thresholds['Bad']" 
             :placeholder="value.thresholds['Bad']">
         </td>
-        <td class="value-cell">
-          {{ value.thresholds["legend"] ? value.name + " thresholds meaning" : ""  }}
-        </td>
       </tr>
     </table>
     <div style="text-align: right; padding: 1rem">
       <span>
         <label @click="save" class="clickable-button">Save</label>
-      </span>
-      <span>
-        <label @click="apply" class="clickable-button">Apply</label>
       </span>
       <span>
         <label for="Loading" class="clickable-button">Load </label>
@@ -89,6 +85,12 @@
         multiple
         @change="load"
       >
+    </div>
+    <div v-if="hoveredOver < 0" style="padding-top: 1rem; text-align: center; color: gray;">
+      Hint: Hover over property name to see the thresholds meaning.
+    </div>
+    <div v-if="hoveredOver >= 0" style="padding-top: 1rem; text-align: center;">
+      {{ thresholdsVals[hoveredOver]["name"] + " thresholds: " + thresholdsVals[hoveredOver]["thresholds"]["legend"] }}
     </div>
   </span>
 </template>
@@ -112,14 +114,12 @@
     "data":() => ({
       "status_ok": STATUS_OK,
       "status_invalid": STATUS_INVALID,
-      "status_warning": STATUS_WARNING 
+      "status_warning": STATUS_WARNING,
+      "hoveredOver": -1,
     }),
     "methods": {
       "save": function(){
         saveThresholds(this.thresholdsVals);
-      },
-      "apply": function(){
-        this.$emit("input", this.thresholdsVals);
       },
       "load": function(event){
         event.preventDefault();
@@ -145,7 +145,7 @@
           reader.onload = () => onLoad(file, reader);
           reader.readAsText(file);
         }
-        this.apply();
+        this.$emit("input", this.thresholdsVals);
       },
       "icon": function(status){
         return selectIcon(status);

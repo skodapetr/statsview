@@ -75,7 +75,7 @@
           >
             <view-list
               style="overflow: hidden; resize: none"
-              v-model="activeViewIndex"
+              v-on:change-view-index="changeViewIndex($event)"
               :views="views"
             />
           </b-col>
@@ -199,7 +199,7 @@
           let data = this.files[this.activeFileIndex].content;
           if (item.validator && this.thresholds) {
             let threshold = this.thresholds.find(elem => elem.name == item.label);
-            newItem.status = item.validator(data, threshold.thresholds);
+            newItem.status = item.validator(data, threshold.thresholds, true);
           }
           result.push(newItem);
         };
@@ -261,6 +261,10 @@
           }
           event.preventDefault();
         }
+      },
+      "changeViewIndex": function(index){
+        this.activeExample = -1;
+        this.activeViewIndex = index;
       },
       "resetThresholds": function(){ //sets thresholds back to default thresholds
         this.thresholds = [];

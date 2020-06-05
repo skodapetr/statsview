@@ -111,7 +111,7 @@
       let status = STATUS_OK;
       let message = "";
 
-      let sData = smoothenData(data);
+      let sData = halfSmoothenData(data);
       for (let index = jump; index < sData["count"] - jump; ++index) {
         let curr = validateSpecificIndex(index, sData, thresholds);
         if(curr["status"] === STATUS_INVALID){
@@ -121,7 +121,7 @@
           message += curr["message"] + " on " + index + "\n"; 
           status = STATUS_INVALID;
         }
-        else if (curr === STATUS_WARNING && status != STATUS_INVALID){
+        else if (curr["status"] === STATUS_WARNING && status != STATUS_INVALID){
           message += curr["message"] + " on " + index + "\n"; 
           status = STATUS_WARNING;
         }
@@ -188,29 +188,29 @@
     let min = Math.min(...data[string].slice(prevIndex, index - 1), ...data[string].slice(index + 1, upcomIndex));
     let max = Math.max(previous, upcoming);
 
-    if(currVal > min * (1 - (thresholds["Ok"] * 2/100)) && currVal < max * (1 + (thresholds["Ok"]/100))){
+    if(currVal > min * (1 - (thresholds["Ok"]/100)) && currVal < max * (1 + (thresholds["Ok"]/100))){
       return STATUS_OK;
     }
-    else if (currVal > min * (1 - (thresholds["Bad"]*2/100)) && currVal < max * (1 + (thresholds["Bad"]/100))){
+    else if (currVal > min * (1 - (thresholds["Bad"]/100)) && currVal < max * (1 + (thresholds["Bad"]/100))){
       return STATUS_WARNING;
     }else{
       /*/
       //uncomment to get console output
 
-      console.log("indel-cycles status invalid reason:");
+      console.log("indel-cycles status_invalid reason:");
       console.log("previous: " + previous + ", upcoming:" + upcoming);
-      console.log("indel-cycles :- " + index + ": " + currVal + " not in (" + min * (1 - (thresholds["Bad"]*2/100)) + ", "
+      console.log("indel-cycles :-  " + index + ": " + currVal + " not in (" + min * (1 - (thresholds["Bad"]/100)) + ", "
        + max * (1 + (thresholds["Bad"]/100)) + ")");
       /**/
       return STATUS_INVALID;
     }
   }
 
-  function smoothenData(data){
-    let inf = smoothenArray(data["insertionsFwd"]);
-    let inr = smoothenArray(data["insertionsRev"]);
-    let def = smoothenArray(data["deletionsFwd"]);
-    let der = smoothenArray(data["deletionsRev"]);
+  function halfSmoothenData(data){
+    let inf = halfSmoothenArray(data["insertionsFwd"]);
+    let inr = halfSmoothenArray(data["insertionsRev"]);
+    let def = halfSmoothenArray(data["deletionsFwd"]);
+    let der = halfSmoothenArray(data["deletionsRev"]);
     return {
       "insertionsFwd": inf,
       "insertionsRev": inr,
@@ -218,5 +218,13 @@
       "deletionsRev": der,
       "count": data["count"],
     }
+  }
+
+  function halfSmoothenArray(array){
+    let tmp = smoothenArray(array);
+    for(let i = 0; i <tmp.length; i++){
+      tmp[i] = (tmp[i] + array[i])/2;
+    }
+    return tmp;
   }
 </script>

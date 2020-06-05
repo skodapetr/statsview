@@ -191,7 +191,7 @@ import { unifiedRound } from './views-utils';
     }else{
       let status;
       let message = "";
-      if(data["reads mapped"]/data["sequences"] < 0.9){
+      if(data["bases mapped (cigar)"] / data["total length"] < 0.9){
         message += "reads mapped\n";
       }
       if(data["error rate"] > 0.0002){
