@@ -188,7 +188,13 @@ export function addFocusLine(svg, x, y, layout, data, args = {}, pretext, units)
 }
 
 function defaultLabel(data, valueY, units) {
-  return data.label + ": " + (Math.round(valueY * 10) / 10) + units;
+  return data.label + ": " + fixedDecimalsString(valueY, 1) + units;
+}
+
+function fixedDecimalsString(num, decimals){
+  let dec = Math.round(num * Math.pow(10, decimals)) % Math.pow(10, decimals);
+  let finNum = Math.floor(num);
+  return finNum + "." + dec;
 }
 
 export function focusMouseMoveStrategy(
@@ -199,7 +205,14 @@ export function focusMouseMoveStrategy(
 
   const focusNode = focusLines[0];
 
-  let focusText = svg.selectAll("text.focus-text").data(data);
+  let textData = [
+    {
+      "label": "fool it",
+      "color": "black",
+      "indent": true,
+    },
+    ...data];
+  let focusText = svg.selectAll("text.focus-text").data(textData);
   const wasThereTextBefore = !focusText.empty();
   focusText.exit().remove();
   focusText = focusText
@@ -226,12 +239,10 @@ export function focusMouseMoveStrategy(
     const textLines = [];
 
     let valueX;
-    for (let index = 1; index < data.length; ++index) {
-      const dataRecord = data[index];
-      const valueIndex = roundedIndex(dataRecord.x, mouseX);
-      valueX = dataRecord.x[valueIndex];
-    }
-    //textLines.push(pretext + " " + valueX + ":");
+    const dataRecord = data[data.length - 1];
+    const valueIndex = roundedIndex(dataRecord.x, mouseX);
+    valueX = dataRecord.x[valueIndex];
+    textLines.push(pretext + " " + valueX + ":");
     for (let index = 0; index < data.length; ++index) {
       const dataRecord = data[index];
       const valueIndex = roundedIndex(dataRecord.x, mouseX);
@@ -244,10 +255,18 @@ export function focusMouseMoveStrategy(
       .attr("x2", x(valueX));
 
     // TODO Allow for multiline text and move left/right from the line.
+    function indentation(data, index){
+      if(data["indent"]){
+        return x(valueX) + 15;
+      }else{
+        return x(valueX) + 30;
+      }
+      
+    }
 
     focusText
       .html((_, index) => textLines[index])
-      .attr("x", (data, index) => x(valueX) + 15 * (index != 0 ? 2 : 1))
+      .attr("x", indentation)
       .attr("y", (data, index) => mouse[1] + index * 15)
       
 

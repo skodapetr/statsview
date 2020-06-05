@@ -22,6 +22,7 @@
   export default {
     "validator": validateData,
     "thresholds": defaultTresholds,
+    "parentDisplaysError": isParentDisplayingErrors,
     "label": "Indels per cycle",
     //
     "name": "indel-cycle",
@@ -89,32 +90,52 @@
     return data["indel-cycles"];
   }
 
+  function isParentDisplayingErrors(){
+    return true;
+  }
+  
   function defaultTresholds(){
     return {
-      "Bad": badTreshold,
-      "Ok": okTreshold,
+      "Bad": 40,
+      "Ok": 20,
       "legend": "maximal % peak in comparison to average of surrounding values"
     }
   }
-  let okTreshold = 20;
-  let badTreshold = 40;
 
   let jump = 2;
-  function validateData(data, thresholds) {
-    let result = STATUS_OK;
-    
+  function validateData(data, thresholds, forceCompute=false) {
     data = selectData(data);
-    data = smoothenData(data);
-    for (let index = jump; index < data["count"] - jump; ++index) {
-      let curr = validateSpecificIndex(index, data, thresholds);
-      if(curr == STATUS_INVALID){
-        return STATUS_INVALID;
+    if(data["status"] && !forceCompute){
+      return data["status"];
+    }else{
+      let status = STATUS_OK;
+      let message = "";
+
+      let sData = smoothenData(data);
+      for (let index = jump; index < sData["count"] - jump; ++index) {
+        let curr = validateSpecificIndex(index, sData, thresholds);
+        if(curr["status"] === STATUS_INVALID){
+          if(status != STATUS_INVALID){
+            message = "";
+          }
+          message += curr["message"] + " on " + index + "\n"; 
+          status = STATUS_INVALID;
+        }
+        else if (curr === STATUS_WARNING && status != STATUS_INVALID){
+          message += curr["message"] + " on " + index + "\n"; 
+          status = STATUS_WARNING;
+        }
       }
-      else if (curr >= STATUS_WARNING){
-        result = STATUS_WARNING;
+      if(status != STATUS_OK){
+        message = "Folowing fragments resulted in current state:\n" + message;
       }
+      let result = {
+        "status": status,
+        "message": message,
+      }
+      data["status"] = result;
+      return result;
     }
-    return result;
   }
 
   function validateSpecificIndex(index, data, thresholds){
@@ -122,7 +143,37 @@
     let insertionsRev = validateIndexOnString(data,"insertionsRev",index, thresholds);
     let deletionsFwd = validateIndexOnString(data,"deletionsFwd",index, thresholds);
     let deletionsRev = validateIndexOnString(data,"deletionsRev",index, thresholds);
-    return worstStatus([insertionsFwd,insertionsRev,deletionsFwd,deletionsRev]);
+    let worst = worstStatus([insertionsFwd,insertionsRev,deletionsFwd,deletionsRev]);
+
+//#region message formating
+    let message = "";
+    let worstNames = [];
+    if (worst != STATUS_OK){
+      if(insertionsFwd === worst){
+        worstNames.push("Insertions (fwd)")
+      }
+      if(insertionsRev === worst){
+        worstNames.push("Insertions (rev)")
+      }
+      if(deletionsFwd === worst){
+        worstNames.push("Deletions (fwd)")
+      }
+      if(deletionsRev === worst){
+        worstNames.push("Insertions (rev)")
+      }
+      if(worstNames.length > 0){
+        message = worstNames[0];
+        for(let i = 1; i < worstNames.length; i++){
+          message += ", " + worstNames[i];
+        }
+      }
+    }
+//#endregion
+
+    return {
+      "status": worst,
+      "message": message,
+    }
   }
   
   function validateIndexOnString(data, string, index, thresholds){
@@ -132,21 +183,9 @@
     let previous = data[string][prevIndex];
     let upcomIndex = Math.min(index + jump, data["count"] - 1);
     let upcoming = data[string][upcomIndex];
-    /*/
-    let range = Math.abs(upcoming - previous);
-    let average = (previous + upcoming) / 2;
-    let diff = Math.abs(currVal - average);
 
-    if(diff < range * okTreshold){
-      return STATUS_OK
-    }else if (diff < range * badTreshold){
-      return STATUS_WARNING;
-    }else{
-      console.log(string + " on " + index + " (diff=" + diff + ", average=" + average + ")");
-      return STATUS_INVALID;
-    }
-    /*/
-    let min = Math.min(...data[string].slice(prevIndex, currVal - 1), ...data[string].slice(currVal + 1, upcomIndex));
+    //minimum is taken from all values, cause peak pointing downwards is less suspicious
+    let min = Math.min(...data[string].slice(prevIndex, index - 1), ...data[string].slice(index + 1, upcomIndex));
     let max = Math.max(previous, upcoming);
 
     if(currVal > min * (1 - (thresholds["Ok"] * 2/100)) && currVal < max * (1 + (thresholds["Ok"]/100))){
@@ -155,12 +194,16 @@
     else if (currVal > min * (1 - (thresholds["Bad"]*2/100)) && currVal < max * (1 + (thresholds["Bad"]/100))){
       return STATUS_WARNING;
     }else{
-      console.log(previous + " " + upcoming);
-      console.log("indel-cycles :- " + index + ": " + currVal + " /€/ (" + min * (1 - (thresholds["Bad"]*2/100)) + ", "
+      /*/
+      //uncomment to get console output
+
+      console.log("indel-cycles status invalid reason:");
+      console.log("previous: " + previous + ", upcoming:" + upcoming);
+      console.log("indel-cycles :- " + index + ": " + currVal + " not in (" + min * (1 - (thresholds["Bad"]*2/100)) + ", "
        + max * (1 + (thresholds["Bad"]/100)) + ")");
+      /**/
       return STATUS_INVALID;
     }
-    /**/
   }
 
   function smoothenData(data){

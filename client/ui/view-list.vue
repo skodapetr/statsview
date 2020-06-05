@@ -44,13 +44,25 @@
         this.$emit("input", index);
       },
       "variant": function (item){
-        return selectVariant(item.status);
+        if(item.status){
+          return selectVariant(item.status["status"]);
+        }else{
+          return selectVariant(undefined);
+        }
       },
       "icon": function (item){
-        return selectIcon(item.status);
+        if(item.status){
+          return selectIcon(item.status["status"]);
+        }else{
+          return selectIcon(undefined);
+        }
       },
       "color": function (item){
-        return selectColor(item.status);
+        if(item.status){
+          return selectColor(item.status["status"]);
+        }else{
+          return selectColor(undefined);
+        }
       },
     },
   } 

@@ -23,6 +23,7 @@
   export default {
     "validator": validateData,
     "thresholds": defaultTresholds,
+    "parentDisplaysError": isParentDisplayingErrors,
     "label": "GC depth",
     //
     "name": "gc-depth",
@@ -83,6 +84,10 @@
     }
   };
 
+  function isParentDisplayingErrors(){
+    return true;
+  }
+  
   function defaultTresholds(){
     return {
       "Bad": 0,
@@ -94,8 +99,11 @@
     return data["gc-depth"];
   }
 
-  function validateData(data, thresholds) {
-    return STATUS_OK;
+  function validateData(data, thresholds, forceCompute=false) {
+    return {
+      "status": STATUS_OK,
+      "message": "computation not implemented",
+    }
   }
 
 </script>

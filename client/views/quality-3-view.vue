@@ -46,6 +46,7 @@
   export default {
     "validator": validateData,
     "thresholds": defaultTresholds,
+    "parentDisplaysError": isParentDisplayingErrors,
     "label": "Quality III",
     //
     "name": "quality-3",
@@ -103,6 +104,10 @@
     return data["quality-3"];
   }
 
+  function isParentDisplayingErrors(){
+    return true;
+  }
+  
   function defaultTresholds(){
     return {
       "Bad": 0,
@@ -110,8 +115,11 @@
       "legend": "",
     }
   }
-  function validateData(data, thresholds) {
-    return STATUS_OK;
+  function validateData(data, thresholds, forceCompute=false) {
+    return {
+      "status": STATUS_OK,
+      "message": "not computed yet",
+    }
   }
 
 </script>

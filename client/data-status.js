@@ -17,6 +17,8 @@ export function bestStatus(statuses){
 
 export function selectIcon(status){
     switch(status) {
+        case undefined:
+            return "fa-spinner";
         case STATUS_WARNING:
             return "question-circle";
         case STATUS_INVALID:
@@ -42,21 +44,17 @@ export function selectVariant(status) {
 }
 
 export function selectColor(status){
-    let result;
     switch(status) {
+        case undefined:
+            return "black";
         case STATUS_WARNING:
-            result = "Yellow";
-            break;
+            return "#d4d208";
         case STATUS_INVALID:
-            result = "Red";
-            break;
+            return "Red";
         case STATUS_NONE:
-            result = "White";
-            break;
+            return "White";
         case STATUS_OK:
         default:
-            result = "LimeGreen";
-            break;
+            return "LimeGreen";
     }
-    return result;
 }

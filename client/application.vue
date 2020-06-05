@@ -283,7 +283,7 @@
           let item = viewsList[i];
           if (item.validator && this.thresholds) {
             let threshold = this.thresholds.find(elem => elem.name == item.label);
-            let currStatus = item.validator(data, threshold.thresholds);
+            let currStatus = item.validator(data, threshold.thresholds)["status"];
             result = worstStatus([currStatus, result]);
             if(result == STATUS_INVALID){
               break;

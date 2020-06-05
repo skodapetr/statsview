@@ -22,6 +22,7 @@
   export default {
     "validator": validateData,
     "thresholds": defaultTresholds,
+    "parentDisplaysError": isParentDisplayingErrors,
     "label": "Insert size",
     //
     "name": "insert-size",
@@ -89,6 +90,10 @@
     return data["insert-size"];
   }
 
+  function isParentDisplayingErrors(){
+    return true;
+  }
+  
   function defaultTresholds(){
     return {
       "Bad": 60,
@@ -102,25 +107,52 @@
   //algorithm finds local minimums to both sides from global maximum, ignore lets it ignore some small local minimums
   let ignore = 1.05;
 
-  function validateData(data, thresholds) {
+  function validateData(data, thresholds, forceCompute=false) {
     data = selectData(data);
-    let usedString = "inwardOrientedPairs";
-    let usedArray = smoothenArray(data[usedString]);
-    let maxIndex = indexOfMax(usedArray);
-    let wholeArea = areaUnderLineInRange(data, 0, data["insertSize"].length - 1);
-    let areaValue = areaAroundMaxValue(data, maxIndex, thresholds);
-    let areaPeak = areaUnderMainPeak(data, maxIndex, usedArray);
-    let peakPercents = areaPeak/wholeArea;
-    let valuePercents = areaValue/wholeArea;
-    let percents = Math.min(peakPercents, valuePercents);
-    if(percents >= thresholds["Ok"]/100){
-      return STATUS_OK;
-    }else if (percents >= thresholds["Bad"]/100){
-      return STATUS_WARNING;
+    if(data["status"] && !forceCompute){
+      return data["status"];
+    }else{
+      let usedString = "pairsTotal";
+      let usedArray = smoothenArray(data[usedString]);
+      let maxIndex = indexOfMax(usedArray);
+      let wholeArea = areaUnderLineInRange(data, 0, data["insertSize"].length - 1);
+      let areaValue = areaAroundMaxValue(data, maxIndex, thresholds);
+      let areaPeak = areaUnderMainPeak(data, maxIndex, usedArray);
+      let peakPercents = areaPeak/wholeArea;
+      let valuePercents = areaValue/wholeArea;
+      let percents = Math.min(peakPercents, valuePercents);
+
+      let status;
+      let message = "";
+      if(percents >= thresholds["Ok"]/100){
+        status = STATUS_OK;
+      }else if (percents >= thresholds["Bad"]/100){
+        message = messageFormating(peakPercents, valuePercents, thresholds["Ok"]/100, "suspecious");
+        status = STATUS_WARNING;
+      }
+      else{
+        message = messageFormating(peakPercents, valuePercents, thresholds["Bad"]/100, "wrong");
+        status = STATUS_INVALID;
+      }
+      let result = {
+        "status": status,
+        "message": message,
+      }
+      data["status"] = result;
+      return result;
     }
-    else{
-      return STATUS_INVALID;
+  }
+
+  function messageFormating(peakPercents, valuePercents, maxPercents, state){
+    let message = "Property is considered " + state + ", because ";
+    if(peakPercents < maxPercents && valuePercents < maxPercents){
+      message += "reads in the main peak and also reads around the main value are not enough.";
+    }else if (peakPercents < maxPercents){
+      message += "there are not enough reads in the main peak."
+    }else{
+      message += "there are not enough reads around the main value."
     }
+    return message;
   }
 
   function areaUnderMainPeak(data, maxIndex, usedArray){
@@ -142,7 +174,7 @@
         break;
       }
     }
-    return areaUnderMainPeak = areaUnderLineInRange(data,
+    return areaUnderLineInRange(data,
        Math.round(maxIndex - peakCountedPart*(maxIndex - prevLocMinIndex)),
        Math.round(maxIndex + peakCountedPart*(nextLocMinIndex - maxIndex)));
   }

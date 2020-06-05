@@ -74,8 +74,11 @@
       />
     </b-col>
     <div class="text-center">{{xCaption()}}<div>
-    <div v-show="showExample()" style="margin-top: 1rem;">
+    <div v-if="showExample()" style="margin-top: 1rem;">
       Example text to be shown under example graph. Because we all know that example without explanation is useless.
+    </div>
+    <div v-else-if="showResultMessage()" :style="'margin-top: 1rem; color: ' + resultColor()">
+      {{ resultMessage() }}
     </div>
   </b-col>
 </template>
@@ -91,7 +94,8 @@
   import Quality3View from "./views/quality-3-view";
   import GcDepthView from "./views/gc-depth-view";
   import ThresholdsView from "./views/threshold-view";
-import gcContentViewVue from './views/gc-content-view.vue';
+  import gcContentViewVue from './views/gc-content-view.vue';
+  import { selectColor } from './data-status';
 
   export default {
     "name": "view-column",
@@ -174,6 +178,37 @@ import gcContentViewVue from './views/gc-content-view.vue';
       "applyThresholds": function(){
         this.$emit("change-thresholds", this.thresholdsValues);
       },
+      "activeViewComponent": function(){
+        switch(this.activeView){
+          case 0:
+            return SummaryView;
+          case 1:
+            return AcgtCyclesView;
+          case 2:
+            return GcContentView;
+          case 3:
+            return IndelCycleView;
+          case 4:
+            return InsertSizeView;
+          case 5:
+            return Quality2View;
+          case 6:
+            return Quality3View;
+          case 7:
+            return GcDepthView;
+          case 8:
+            return ThresholdsView;
+        }
+      },
+      "showResultMessage": function(){
+        return this.activeViewComponent().parentDisplaysError();
+      },
+      "resultMessage": function(){
+        return this.activeViewComponent().validator(this.data)["message"];
+      },
+      "resultColor": function(){
+        return selectColor(this.activeViewComponent().validator(this.data)["status"]);
+      }
     }
   }
 </script>

@@ -94,78 +94,90 @@
 </template>
 
 <script>
-    import { STATUS_NONE, STATUS_OK, STATUS_WARNING, STATUS_INVALID,
-       selectIcon,
-       selectColor} from '../data-status'
-    import {loadThresholds, saveThresholds} from '../bchk-reader'
-    import {indexOfWithAttr} from './views-utils'
-    export default {
-        "validator": validateData,
-        "thresholds": defaultThresholds,
-        "label": "Auto QC",
-        //
-        "name": "thresholds-view",
-        "props":{
-            "thresholdsVals": {"type": Array, "required": true},
-        },
-        "data":() => ({
-          "status_ok": STATUS_OK,
-          "status_invalid": STATUS_INVALID,
-          "status_warning": STATUS_WARNING 
-        }),
-        "methods": {
-          "save": function(){
-            saveThresholds(this.thresholdsVals);
-          },
-          "apply": function(){
-            this.$emit("input", this.thresholdsVals);
-          },
-          "load": function(event){
-            event.preventDefault();
-            const files = event.target.files;
-            const onLoad = (file, reader) => {
-              const content = loadThresholds(reader.result);
+  import { STATUS_NONE, STATUS_OK, STATUS_WARNING, STATUS_INVALID,
+      selectIcon,
+      selectColor} from '../data-status'
+  import {loadThresholds, saveThresholds} from '../bchk-reader'
+  import {indexOfWithAttr} from './views-utils'
+  export default {
+    "validator": validateData,
+    "thresholds": defaultThresholds,
+    "parentDisplaysError": isParentDisplayingErrors,
+    "label": "Auto QC",
+    //
+    "name": "thresholds-view",
+    "props":{
+        "thresholdsVals": {"type": Array, "required": true},
+    },
+    "data":() => ({
+      "status_ok": STATUS_OK,
+      "status_invalid": STATUS_INVALID,
+      "status_warning": STATUS_WARNING 
+    }),
+    "methods": {
+      "save": function(){
+        saveThresholds(this.thresholdsVals);
+      },
+      "apply": function(){
+        this.$emit("input", this.thresholdsVals);
+      },
+      "load": function(event){
+        event.preventDefault();
+        const files = event.target.files;
+        const onLoad = (file, reader) => {
+          const content = loadThresholds(reader.result);
 
-              //TODO: thresholds file may include file, that its attached to, but we do not implement it
+          //TODO: thresholds file may include file, that its attached to, but we do not implement it
 
-              if(content["thresholds"]){  // user uploaded thresholds
-                let newThresholds = content["thresholds"];
-                for(const prop in newThresholds){
-                  let index = indexOfWithAttr(this.thresholdsVals, "name", prop);
-                  if(index >= 0){
-                    this.thresholdsVals[index]["thresholds"] = newThresholds[prop];
-                  }
-                }
+          if(content["thresholds"]){  // user uploaded thresholds
+            let newThresholds = content["thresholds"];
+            for(const prop in newThresholds){
+              let index = indexOfWithAttr(this.thresholdsVals, "name", prop);
+              if(index >= 0){
+                this.thresholdsVals[index]["thresholds"] = newThresholds[prop];
               }
-            };
-            for (let i = 0; i < files.length; i++) {
-              const file = files[i];
-              const reader = new FileReader();
-              reader.onload = () => onLoad(file, reader);
-              reader.readAsText(file);
             }
-            this.apply();
-          },
-          "icon": function(status){
-            return selectIcon(status);
-          },
-          "color": function(status){
-            return selectColor(status);
-          },
+          }
+        };
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const reader = new FileReader();
+          reader.onload = () => onLoad(file, reader);
+          reader.readAsText(file);
         }
+        this.apply();
+      },
+      "icon": function(status){
+        return selectIcon(status);
+      },
+      "color": function(status){
+        return selectColor(status);
+      },
     }
+  }
 
-    function defaultThresholds(){
+  function selectData(data){
+    return undefined;
+  }
+
+  function defaultThresholds(){
     return {
       "Bad": "-",
       "Ok": "-",
       "legend": "",
     }
   }
+    
+  function isParentDisplayingErrors(){
+    return false;
+  }
 
-    function validateData(data, thresholds){
-        return STATUS_NONE;
-    }
+  function validateData(data, thresholds, forceCopmute=false){
+    return {
+      "status": STATUS_NONE,
+      "message": "",
+    };
+  }
 </script>
 
 <style scoped>

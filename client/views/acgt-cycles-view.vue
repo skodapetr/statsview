@@ -36,6 +36,7 @@
   export default {
     "validator": validateData,
     "thresholds": defaultTresholds,
+    "parentDisplaysError": isParentDisplayingErrors,
     "label": "ACGT cycles",
     "menuData": {
       "graph": "line"
@@ -104,6 +105,10 @@
     }
   };
 
+  function isParentDisplayingErrors(){
+    return true;
+  }
+
   function selectData(data) {
     return data["acgt-cycles"];
   }
@@ -116,24 +121,45 @@
     }
   }
 
-  function validateData(data, thresholds) {
-    let result = STATUS_OK;
-
+  function validateData(data, thresholds, forceCompute=false) {
     data = selectData(data);
-    for (let index = 0; index < data["count"]; ++index) {
-      let CG = Math.abs(data["C"][index] - data["G"][index]);
-      let AT = Math.abs(data["A"][index] - data["T"][index]);
-      let ma = Math.max(CG,AT);
-      if(thresholds["Ok"] >= ma){
-        continue;
+    if(data["status"] && !forceCompute){
+      return data["status"];
+    }else
+    {
+      let status = STATUS_OK;
+      let message = "";
+      for (let index = 0; index < data["count"]; ++index) {
+        let CG = Math.abs(data["C"][index] - data["G"][index]);
+        let AT = Math.abs(data["A"][index] - data["T"][index]);
+        let ma = Math.max(CG,AT);
+        if(thresholds["Ok"] >= ma){
+          continue;
+        }
+        else if (thresholds["Bad"] >= ma){
+          if (status != STATUS_INVALID){
+            message += (CG > AT ? "C-G" : "A-T") + " on cycle " + index + ", ";
+            status = STATUS_WARNING;
+          }
+        }
+        else{
+          if (status != STATUS_INVALID){
+            message = "";
+          }
+          message += (CG > AT ? "G-C" : "A-T") + " on cycle " + index + ", ";
+          status = STATUS_INVALID;
+        }
       }
-      else if (thresholds["Bad"] >= ma){
-        result = STATUS_WARNING;
+      if(status != STATUS_OK){
+        message = "Folowing pairs are too far from each other:\n" + message;
       }
-      else{
-        return STATUS_INVALID;
-      }
+      let result = {
+        "message": message,
+        "status": status, 
+      };
+      data["status"] = result;
+      return result;
     }
-    return result;
+    
   }
 </script>

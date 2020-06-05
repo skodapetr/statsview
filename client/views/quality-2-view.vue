@@ -41,12 +41,13 @@
   import LineAreaPlot from "../d3js/line-area-plot";
   import NoData from "../ui/no-data";
 
-  import {rangeByStep} from "./views-utils";
+  import {rangeByStep, unifiedRound} from "./views-utils";
   import {STATUS_OK, STATUS_WARNING, STATUS_INVALID} from "../data-status";
 
   export default {
     "validator": validateData,
     "thresholds": defaultTresholds,
+    "parentDisplaysError": isParentDisplayingErrors,
     "label": "Quality II",
     //
     "name": "quality-2",
@@ -144,6 +145,10 @@
     return data["quality-2"];
   }
 
+  function isParentDisplayingErrors(){
+    return true;
+  }
+  
   function defaultTresholds(){
     return {
       "Bad": badTreshold,
@@ -153,21 +158,42 @@
   }
   let okTreshold = 8;
   let badTreshold = 15;
-  function validateData(data, thresholds) {
-    
+  function validateData(data, thresholds, forceCompute=false) {
     data = selectData(data);
-    let min = Math.min(...data["FFQ"].mean, ...data["FFQ"].median,
-                       ...data["LFQ"].mean, ...data["LFQ"].median); 
-    let max = Math.max(...data["FFQ"].mean, ...data["FFQ"].median,
-                       ...data["LFQ"].mean, ...data["LFQ"].median); 
-
-    let diff = max - min;
-    if(diff < okTreshold){
-      return STATUS_OK;
-    }else if (diff < badTreshold){
-      return STATUS_WARNING;
+    if(data["status"] && !forceCompute){
+      return data["status"];
     }else{
-      return STATUS_INVALID;
+      let min = Math.min(...data["FFQ"].mean, ...data["FFQ"].median,
+                        ...data["LFQ"].mean, ...data["LFQ"].median); 
+      let max = Math.max(...data["FFQ"].mean, ...data["FFQ"].median,
+                        ...data["LFQ"].mean, ...data["LFQ"].median); 
+
+      let diff = max - min;
+      diff = unifiedRound(diff);
+
+      let status;
+      let message;
+      if(diff < okTreshold){
+        message = "";
+        status = STATUS_OK;
+      }else{
+        let state;
+        if (diff < badTreshold){
+          state = "suspecious";
+          status = STATUS_WARNING;
+        }else{
+          state = "wronng";
+          status = STATUS_INVALID;
+        }
+        message = "Property is considered " + state + ", because difference(" + diff + 
+          ") between maximal(" + max + ") and minmal(" + min + ") value is too large."
+      }
+      let result = {
+        "status": status,
+        "message": message,
+      }
+      data["status"] = result;
+      return result;
     }
   }
 

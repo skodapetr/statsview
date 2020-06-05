@@ -17,11 +17,12 @@
   import NoData from "../ui/no-data";
 
   import {rangeByStep, unifiedRound} from "./views-utils";
-  import {STATUS_OK, STATUS_WARNING, STATUS_INVALID} from "../data-status";
+  import {STATUS_OK, STATUS_WARNING, STATUS_INVALID, worstStatus} from "../data-status";
 
   export default {
     "validator": validateData,
     "thresholds": defaultTresholds,
+    "parentDisplaysError": isParentDisplayingErrors,
     "label": "GC content",
     //
     "name": "gc-content",
@@ -91,6 +92,10 @@
     return data["gc-content-ref"];
   }
 
+  function isParentDisplayingErrors(){
+    return true;
+  }
+  
   function defaultTresholds(){
     return {
       "Bad": badTreshold,
@@ -101,26 +106,59 @@
   let okTreshold = 15;
   let badTreshold = 30;
 
-  function validateData(data, thresholds) {
-    let result = STATUS_OK;
-    
+  function validateData(data, thresholds, forceCompute=false) {
     data = selectData(data);
-    for (let index = 1; index < data["count"] - 1; ++index) {
-      let curr = validateSpecificIndex(index, data);
-      if(curr === STATUS_INVALID){
-        return STATUS_INVALID;
+    if(data["status"] && !forceCompute){
+      return data["status"];
+    }else{
+      let status = STATUS_OK;
+      let message = "";
+
+      for (let index = 1; index < data["count"] - 1; ++index) {
+        let curr = validateSpecificIndex(index, data);
+        if(curr["status"] === STATUS_INVALID){
+          if(status != STATUS_INVALID){
+            message = "";
+          }
+          message += curr["message"] + " on " + index + ", ";
+          status = STATUS_INVALID;
+        }
+        else if (curr["status"] === STATUS_WARNING && status != STATUS_INVALID){
+          message += curr["message"] + " on " + index + ", ";
+          status = STATUS_WARNING;
+        }
       }
-      else if (curr === STATUS_WARNING){
-        result = STATUS_WARNING;
+      if(status != STATUS_OK){
+        message = "Folowing fragments are in worst state:\n" + message;
       }
+      let result = {
+        "status": status,
+        "message": message,
+      }
+      data["status"] = result;
+      return result;
     }
-    return result;
   }
 
   function validateSpecificIndex(index, data){
     let gcf = validateIndexOnString(data,"gcf-y","gcf-x",index);
     let gcl = validateIndexOnString(data,"gcl-y","gcl-x",index);
-    return Math.max(gcf, gcl);
+    let worst = worstStatus([gcf, gcl]);
+    let message = "";
+    if(worst != STATUS_OK){
+      if(gcl === gcf){
+        message = "both"
+      }else if(gcl === worst){
+        message = "last";
+      }
+      else{
+        message = "first";
+      }
+    }
+    return {
+      "status": worst,
+      "message": message,
+    };
   }
   
   function validateIndexOnString(data, stringY, stringX, index){
@@ -144,6 +182,7 @@
     }
     else if (isTresholdOk(badTreshold, currVal, average)){
       /*/
+      //uncomment to activate console output
       console.log(currX + ": " + currVal + " /€/ (" + average * (1 - (badTreshold/100)) + ", "
        + average * (1 + (badTreshold/100)) + ") - average = " + average + " (all rounded by unifiedRound)");
       console.log(average + " = (" + previousY + " * " + " (" + upcomingX + " - " + currX + ") + "
@@ -153,7 +192,7 @@
     }else{
       return STATUS_INVALID;
     }
-      return STATUS_OK;
+    return STATUS_OK;
   }
 
   function isTresholdOk(treshold, currVal, average){
