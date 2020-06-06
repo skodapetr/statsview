@@ -205,6 +205,8 @@ export function focusMouseMoveStrategy(
 
   const focusNode = focusLines[0];
 
+  //TODO: following is awful, but I did not understand how to add lines by any other mean
+  
   let textData = [
     {
       "label": "fool it",

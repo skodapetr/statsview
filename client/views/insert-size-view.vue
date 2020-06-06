@@ -119,8 +119,8 @@
       let wholeArea = areaUnderLineInRange(data, 0, data["insertSize"].length - 1);
       let areaValue = areaAroundMaxValue(data, maxIndex, thresholds);
       let areaPeak = areaUnderMainPeak(data, maxIndex, usedArray);
-      let peakPercents = areaPeak/wholeArea;
-      let valuePercents = areaValue/wholeArea;
+      let peakPercents = unifiedRound(areaPeak/wholeArea);
+      let valuePercents = unifiedRound(areaValue/wholeArea);
       let percents = Math.min(peakPercents, valuePercents);
 
       let status;
@@ -146,12 +146,13 @@
 
   function messageFormating(peakPercents, valuePercents, maxPercents, state){
     let message = "Property is considered " + state + ", because ";
-    if(peakPercents < maxPercents && valuePercents < maxPercents){
-      message += "reads in the main peak and also reads around the main value are not enough.";
-    }else if (peakPercents < maxPercents){
-      message += "there are not enough reads in the main peak."
+    if(peakPercents <= maxPercents && valuePercents < maxPercents){
+      message += "reads in the main peak(" + peakPercents*100 + "%) and also reads around the main value("
+        + valuePercents*100 + "%) are not enough.";
+    }else if (peakPercents <= maxPercents){
+      message += "there are not enough reads in the main peak(" + peakPercents*100 + "%)."
     }else{
-      message += "there are not enough reads around the main value."
+      message += "there are not enough reads around the main value(" + valuePercents*100 + "%)."
     }
     return message;
   }

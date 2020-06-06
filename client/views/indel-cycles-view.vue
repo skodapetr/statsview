@@ -118,16 +118,23 @@
           if(status != STATUS_INVALID){
             message = "";
           }
-          message += curr["message"] + " on " + index + "\n"; 
+          message += curr["message"] + " on " + index + "; "; 
           status = STATUS_INVALID;
         }
         else if (curr["status"] === STATUS_WARNING && status != STATUS_INVALID){
-          message += curr["message"] + " on " + index + "\n"; 
+          message += curr["message"] + " on " + index + "; "; 
           status = STATUS_WARNING;
         }
       }
       if(status != STATUS_OK){
-        message = "Folowing fragments resulted in current state:\n" + message;
+        let state = "!!!UNKNOWN STATE!!!";
+        if(status === STATUS_WARNING){
+          state = "suspecious";
+        }else if(state === STATUS_INVALID){
+          state = "wrong";
+        }
+        
+        message = "Folowing fragments are considered " + state + ":\n" + message;
       }
       let result = {
         "status": status,
