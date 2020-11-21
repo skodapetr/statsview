@@ -9,8 +9,12 @@ import {
 
 import App from "./application";
 
-import "bootstrap/dist/css/bootstrap.css";
-import "bootstrap-vue/dist/bootstrap-vue.css";
+//import "bootstrap/dist/css/bootstrap.css";
+import "./bootstrap.scss";
+// import "bootstrap-vue/dist/bootstrap-vue.css";
+
+
+// TODO ... Insert custom style .. 
 
 import {library} from "@fortawesome/fontawesome-svg-core";
 import {
