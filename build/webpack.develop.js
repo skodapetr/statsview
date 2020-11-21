@@ -19,7 +19,14 @@ module.exports = merge(common, {
           "vue-style-loader",
           "css-loader"
         ]
-      }, {
+      }, 
+      {
+        "test": /\.scss$/,
+        "use": [
+          'sass-loader',
+        ]
+      }, 
+      {
         // Apply linter during run development.
         "enforce": "pre",
         "test": /\.(js|vue)$/,

@@ -73,7 +73,7 @@
         v-model="thresholdsValues"
       />
     </b-col>
-    <div class="text-center">{{xCaption()}}<div>
+    <div class="text-center">{{xCaption()}}</div>
     <div v-if="showExample()" style="margin-top: 1rem;">
       Example text to be shown under example graph. Because we all know that example without explanation is useless.
     </div>
